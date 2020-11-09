@@ -64,6 +64,149 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Hive-安装" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" class="article-date">
+  <time datetime="2020-11-09T17:34:47.000Z" itemprop="datePublished">2020-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/11/10/Hive-%E5%AE%89%E8%A3%85/">Hive 安装</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckhaubsfv00058qvx0r7phtah" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Hadoop-集群环境搭建" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="article-date">
+  <time datetime="2020-11-09T17:23:23.000Z" itemprop="datePublished">2020-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Hadoop 集群环境搭建</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>[TOC]</p>
+<h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p><strong>集群规划</strong></p>
+<table>
+<thead>
+<tr>
+<th>框架</th>
+<th>linux121</th>
+<th>linux122</th>
+<th>linux123</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HDFS</td>
+<td>NameNode、DataNode</td>
+<td>DataNode</td>
+<td>SecondaryNameNode、DataNode</td>
+</tr>
+<tr>
+<td>YARN</td>
+<td>NodeManager</td>
+<td>NodeManager</td>
+<td>NodeManager、ResourceManager</td>
+</tr>
+</tbody></table>
+<p><strong>安装 JDK</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /usr/local/java</span><br><span class="line">wget http://download.janhen.com/tools/jdk-8u251-linux-x64.tar.gz</span><br><span class="line">tar -zxvf jdk-8u251-linux-x64.tar.gz -C /usr/local/java</span><br><span class="line"></span><br><span class="line">vi /etc/profile</span><br><span class="line">export JAVA_HOME=/usr/local/java/jdk1.8.0_251</span><br><span class="line">export JRE_HOME=$&#123;JAVA_HOME&#125;/jre</span><br><span class="line">export CLASSPATH=.:$&#123;JAVA_HOME&#125;/lib:$&#123;JRE_HOME&#125;/lib</span><br><span class="line">export PATH=$&#123;JAVA_HOME&#125;/bin:$PATH</span><br><span class="line"></span><br><span class="line">source /etc/profile</span><br><span class="line">ln -s /usr/local/java/jdk1.8.0_251/bin/java /usr/bin/java</span><br><span class="line">java -version</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p><strong>SSH 免密登陆</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mkdir /root/.ssh </span><br><span class="line">chmod 700 /root/.ssh</span><br><span class="line"></span><br><span class="line">cd ~/.ssh</span><br><span class="line">ssh-keygen -t rsa -P &quot;&quot;</span><br><span class="line">cat id_rsa.pub &gt;&gt; authorized_keys</span><br><span class="line"></span><br><span class="line">scp authorized_keys linux122:/root/.ssh/</span><br><span class="line">scp authorized_keys linux123:/root/.ssh/</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p><strong>本地域名配置</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">xxx linux121</span><br><span class="line">xxx linux122</span><br><span class="line">xxx linux123</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>准备安装的目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p &#x2F;opt&#x2F;janhen&#x2F;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 防火墙关闭</span></span><br><span class="line">systemctl status firewalld</span><br><span class="line">vi /etc/selinux/config</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 软件安装</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">mkdir -p /opt/janhen/</span><br><span class="line">cd /opt/janhen</span><br><span class="line">wget https://archive.apache.org/dist/hadoop/common/hadoop-2.9.2/hadoop-2.9.2.tar.gz</span><br><span class="line">tar -zxvf hadoop-2.9.2.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 环境变量配置</span></span><br><span class="line">vim /etc/profile</span><br><span class="line"></span><br><span class="line">export JAVA_HOME=/usr/local/java/jdk1.8.0_251</span><br><span class="line">export JRE_HOME=$&#123;JAVA_HOME&#125;/jre</span><br><span class="line">export CLASSPATH=.:$&#123;JAVA_HOME&#125;/lib:$&#123;JRE_HOME&#125;/lib</span><br><span class="line">export PATH=$&#123;JAVA_HOME&#125;/bin:$PATH</span><br><span class="line"></span><br><span class="line">export HADOOP_HOME=/opt/janhen/hadoop-2.9.2</span><br><span class="line">export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin</span><br><span class="line"></span><br><span class="line">source /etc/profile</span><br><span class="line">ln -s /usr/local/java/jdk1.8.0_251/bin/java /usr/bin/java</span><br><span class="line">java -version</span><br><span class="line">hadoop version</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> JDK路径明确配置给HDFS</span></span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/hadoop-env.sh</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/core-site.xml</span><br><span class="line"></span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/hdfs-site.xml</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/mapred-env.sh</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/mapred-site.xml</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/yarn-env.sh</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/yarn-site.xml</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/slaves</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 更改权限</span></span><br><span class="line">chown -R root:root $HADOOP_HOME</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 手动启动</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">hadoop namenode -format</span><br><span class="line">hadoop_tmp_dir=/home/hadoop/data/tmp</span><br><span class="line">metadata_file=fsimage_0000000000000000000</span><br><span class="line">cd $hadoop_tmp_dir/dfs/name/current</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动NameNode</span></span><br><span class="line">hadoop-daemon.sh stop namenode</span><br><span class="line">hadoop-daemon.sh start namenode</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动DataNode</span></span><br><span class="line">hadoop-daemon.sh start datanode</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动 yarn</span></span><br><span class="line">yarn-daemon.sh start resourcemanager</span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动 yarn 从即诶单</span></span><br><span class="line">yarn-daemon.sh start nodemanager</span><br><span class="line"></span><br><span class="line">jps | grep NameNode</span><br><span class="line">jps | grep DataNode</span><br><span class="line">jps | grep ResourceManager</span><br><span class="line">jps | grep NodeManager</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 集群启动</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">start-dfs.sh</span><br><span class="line">start-yarn.sh</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 测试集群</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">hdfs dfs -mkdir -p /test/input</span><br><span class="line"></span><br><span class="line">cat &gt; /root/test.txt &lt;&lt;EOF</span><br><span class="line">hello hdfs ...</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">上传linxu文件到Hdfs</span></span><br><span class="line">hdfs dfs -put /root/test.txt /test/input</span><br><span class="line">hdfs dfs -get /test/input/test.txt</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> --------测试词频统计执行--------</span></span><br><span class="line">cat &gt; /root/wc.txt &lt;&lt;EOF</span><br><span class="line">hadoop mapreduce yarn</span><br><span class="line">hdfs hadoop mapreduce</span><br><span class="line">mapreduce yarn spark</span><br><span class="line">flink hql</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">hdfs dfs -ls /</span><br><span class="line">hdfs dfs -du /</span><br><span class="line">hdfs dfs -mkdir /wcinput</span><br><span class="line">hdfs dfs -put /root/wc.txt /wcinput</span><br><span class="line">hadoop jar $HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.9.2.jar wordcount /wcinput /wcoutput</span><br><span class="line">hdfs dfs -cat /wcoutput/part-r-00000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> --------日志收集--------</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动历史服务器</span></span><br><span class="line">mr-jobhistory-daemon.sh start historyserver</span><br><span class="line">jps | grep JobHistoryServer</span><br><span class="line"></span><br><span class="line">curl http://linux121:19888/jobhistory</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> --------日志配置--------</span></span><br><span class="line">yarn-daemon.sh stop resourcemanager</span><br><span class="line">yarn-daemon.sh stop nodemanager</span><br><span class="line">mr-jobhistory-daemon.sh stop historyserver</span><br><span class="line"></span><br><span class="line">yarn-daemon.sh start resourcemanager</span><br><span class="line">yarn-daemon.sh stop resourcemanager</span><br><span class="line">yarn-daemon.sh start nodemanager</span><br><span class="line">mr-jobhistory-daemon.sh start historyserver</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">19888,9000,50090,50010,6379,9092,8088,8080</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证地址</span></span><br><span class="line">jobhistory</span><br><span class="line">linux121:19888</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h2 id="Refs"><a href="#Refs" class="headerlink" title="Refs"></a>Refs</h2><p><a target="_blank" rel="noopener" href="https://archive.apache.org/dist/hadoop/common/hadoop-2.9.2/">Hadoop 安装包地址</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckhaubsfs00038qvx301e7yjs" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-MapReduce-中的排序" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" class="article-date">
@@ -113,7 +256,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" data-id="ckhatcchy0005uhvx7omlctlc" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" data-id="ckhaubsfw00068qvx1tydf0ba" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -184,7 +327,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/MapReduce-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/" data-id="ckhatcchw0003uhvxb1h38gyu" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/MapReduce-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/" data-id="ckhaubsfx00078qvx760baefh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -240,7 +383,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/" data-id="ckhatccht0001uhvxcrodfh53" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/" data-id="ckhaubsfp00018qvxcdibh9og" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -285,7 +428,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E8%A7%88/" data-id="ckhatcci5000euhvxa0vqhkt5" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E8%A7%88/" data-id="ckhaubsg8000l8qvxhvad5ot0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -329,7 +472,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%B1%BB%E9%97%AE%E9%A2%98/" data-id="ckhatcci5000fuhvxdrz83gkp" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%B1%BB%E9%97%AE%E9%A2%98/" data-id="ckhaubsg8000m8qvx3qubf9au" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
@@ -401,7 +544,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" data-id="ckhatcci3000auhvxge76ega2" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" data-id="ckhaubsfz000a8qvx4iuy6j2x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
@@ -698,96 +841,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E5%9F%BA%E7%A1%80%E6%8E%92%E5%BA%8F/" data-id="ckhatcci3000buhvx35093snq" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E5%9F%BA%E7%A1%80%E6%8E%92%E5%BA%8F/" data-id="ckhaubsfz000c8qvxhak41yts" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-test-my-site" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/11/10/test-my-site/" class="article-date">
-  <time datetime="2020-11-09T16:27:14.000Z" itemprop="datePublished">2020-11-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/11/10/test-my-site/">test_my_site</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/test-my-site/" data-id="ckhatcci00007uhvx8tkf6eaj" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/11/10/hello-world/" class="article-date">
-  <time datetime="2020-11-09T16:25:37.469Z" itemprop="datePublished">2020-11-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/11/10/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/hello-world/" data-id="ckhatcchz0006uhvxb15yaghj" class="article-share-link">Share</a>
-      
-      
     </footer>
   </div>
   
@@ -840,6 +898,14 @@
       <ul>
         
           <li>
+            <a href="/2020/11/10/Hive-%E5%AE%89%E8%A3%85/">Hive 安装</a>
+          </li>
+        
+          <li>
+            <a href="/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Hadoop 集群环境搭建</a>
+          </li>
+        
+          <li>
             <a href="/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/">MapReduce 中的排序</a>
           </li>
         
@@ -849,14 +915,6 @@
         
           <li>
             <a href="/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/">HDFS 读写流程</a>
-          </li>
-        
-          <li>
-            <a href="/2020/11/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E8%A7%88/">大数据概览</a>
-          </li>
-        
-          <li>
-            <a href="/2020/11/10/%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%B1%BB%E9%97%AE%E9%A2%98/">旋转数组类问题</a>
           </li>
         
       </ul>
