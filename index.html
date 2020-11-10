@@ -64,6 +64,108 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-React-HOC" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/11/10/React-HOC/" class="article-date">
+  <time datetime="2020-11-10T14:45:35.000Z" itemprop="datePublished">2020-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/11/10/React-HOC/">React HOC</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>高阶组件：</p>
+<blockquote>
+<p>Higher-Order Components: </p>
+<p>是个函数，接受一个组件，返回一个新的组件。</p>
+</blockquote>
+<p>HOC 在 React 的第三⽅库中很常⻅见，例如 React-Redux 的 connect。</p>
+<p>组件是将 props 转换为 UI，⽽⾼阶组件是将组件转换为另⼀个组 件。</p>
+<p>是 React 中⽤于复⽤组件逻辑的⼀种⾼级技巧。</p>
+<p>不在 render 方法中使用 HOC：</p>
+<p>React 的 diff 算法使⽤组件标识来确定它是应该更新现有⼦树还是将其丢弃并挂载新⼦树。</p>
+<p>重新挂载组件会导致该组件及其所有⼦组 件的状态丢失。</p>
+<h4 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h4><p>ES7中出现的 装饰器语法来更优雅的书写代码。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -D @babel/plugin-proposal-decorators</span><br></pre></td></tr></table></figure>
+
+<p>conﬁg-overrides.js</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//配置完成后记得重启下 </span></span><br><span class="line"><span class="keyword">const</span> &#123; addDecoratorsLegacy &#125; = <span class="built_in">require</span>(<span class="string">&quot;customizecra&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = override( </span><br><span class="line">  ..., </span><br><span class="line">  addDecoratorsLegacy()<span class="comment">//配置装饰器 </span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>必须为 class 组件</p>
+<p>需要插件支持…</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@foo</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>Child<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+<h3 id="表单组件"><a href="#表单组件" class="headerlink" title="表单组件"></a>表单组件</h3><p>⽤ <code>@Form.create()</code> 的⽅式实现：</p>
+<ul>
+<li><p>getFieldDecorator： ⽤于和表单进⾏双向绑定 </p>
+</li>
+<li><p>getFieldsValue：获取⼀组输⼊控件的值，如不传⼊参数，则获 取全部组件的值 </p>
+</li>
+<li><p>getFieldValue： 获取⼀个输⼊控件的值 </p>
+</li>
+<li><p>validateFields：校验并获取⼀组输⼊域的值与 Error，若 ﬁeldNames 参数为空，则校验全部组件</p>
+</li>
+</ul>
+<p>设计要求：</p>
+<p>数据搜集、校验、提交</p>
+<p>传递一个 input 组件包装函数接管输入事件并统一管理表单数据</p>
+<p>传递一个校验函数具备数据校验功能</p>
+<h3 id="弹窗组件"><a href="#弹窗组件" class="headerlink" title="弹窗组件"></a>弹窗组件</h3><p>要求弹窗内容在A处声明，却在B处展示。</p>
+<p>Portal</p>
+<p>传送门 16.3 引入</p>
+<p>createPortal(Children, container)</p>
+<p>方便遮罩</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;createPortal&#125; <span class="keyword">from</span> <span class="string">&#x27;react-dom&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<p>多个弹窗：</p>
+<p>挂载到 DOM 中，会有多个</p>
+<p>组件复合</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">this.props.children</span><br></pre></td></tr></table></figure>
+
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/11/10/React-HOC/" data-id="ckhc38f7e000hapvxftxjhmf7" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux-常用命令" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="article-date">
@@ -93,7 +195,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" data-id="ckhc2xmmr0005xcvx4w5w3l9e" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" data-id="ckhc38f780005apvx6amrbnxm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
@@ -127,8 +229,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>[TOC]</p>
-<h2 id="SSH"><a href="#SSH" class="headerlink" title="SSH"></a>SSH</h2><blockquote>
+        <h2 id="SSH"><a href="#SSH" class="headerlink" title="SSH"></a>SSH</h2><blockquote>
 <p>默认安装好客户端，对于海外的服务器进行转发有时连接效果较好</p>
 </blockquote>
 <h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>存放在 <code>~/.ssh/config</code></p>
@@ -314,7 +415,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" data-id="ckhc2xmms0006xcvx2l3s9mfq" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" data-id="ckhc38f7a0007apvx6js83l5u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
@@ -421,7 +522,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckhc2xmmp0003xcvxdk6vbttf" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckhc38f750003apvx1sic6q3k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -455,8 +556,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>[TOC]</p>
-<h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p><strong>集群规划</strong></p>
+        <h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p><strong>集群规划</strong></p>
 <table>
 <thead>
 <tr>
@@ -526,7 +626,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckhc2xmn0000lxcvx2e718dfh" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckhc38f790006apvx6tvgau6h" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -587,7 +687,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" data-id="ckhc2xmmt0007xcvx8jyd4ioz" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" data-id="ckhc38f7c000aapvx9dsm1zwl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -658,7 +758,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/MapReduce-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/" data-id="ckhc2xmmv000axcvx03ake021" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/MapReduce-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/" data-id="ckhc38f7d000capvxcw82efbe" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -714,7 +814,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/" data-id="ckhc2xmmm0001xcvx4nm01tzb" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/" data-id="ckhc38f720001apvxfmx8dqii" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -759,7 +859,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E8%A7%88/" data-id="ckhc2xmmy000hxcvx9rq7088y" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E8%A7%88/" data-id="ckhc38f7g000mapvx68j0blqv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -803,82 +903,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%B1%BB%E9%97%AE%E9%A2%98/" data-id="ckhc2xmmz000jxcvx5wte1tk6" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%B1%BB%E9%97%AE%E9%A2%98/" data-id="ckhc38f7i000oapvx4vc151cx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-二分查找" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/11/10/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" class="article-date">
-  <time datetime="2020-11-09T16:56:19.000Z" itemprop="datePublished">2020-11-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/11/10/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/">二分查找</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="二分查找"><a href="#二分查找" class="headerlink" title="二分查找"></a>二分查找</h3><p>（1） 算法</p>
-<p>（2） 复杂度</p>
-<p>O(logN)</p>
-<p>（3）性质</p>
-<ul>
-<li><p>适用于处理 ceil、floor 等操作；</p>
-</li>
-<li><p>配合索引相当于是实现了跳表结构；</p>
-</li>
-</ul>
-<p><strong>1、 普通二分查找</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binarySearch</span><span class="params">(<span class="keyword">int</span>[] arr, <span class="keyword">int</span> target)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> lo = <span class="number">0</span>, hi = arr.length - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (lo &lt;= hi) &#123;</span><br><span class="line">        <span class="keyword">int</span> mid = lo + (hi - lo) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (arr[mid] == target)</span><br><span class="line">            <span class="keyword">return</span> mid;</span><br><span class="line">        <span class="keyword">if</span> (arr[mid] &lt; target)</span><br><span class="line">            lo = mid + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            hi = mid - <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>2、 带有重复元素的二分查找-最先&amp;最后</strong></p>
-<p>（1） 查找含有重复元素的数组集合中元素第一次出现的位置</p>
-<p>在相等的情况下，进行判断决定是否进行缩小范围或找到对应的值；</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binarySearchFirst</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> lo, <span class="keyword">int</span> hi, <span class="keyword">int</span> aim)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (lo &lt;= hi) &#123;</span><br><span class="line">        <span class="keyword">int</span> mid = lo + (hi - lo) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (nums[mid] == aim) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mid == <span class="number">0</span> || nums[mid-<span class="number">1</span>] != nums[mid])  <span class="keyword">return</span> mid;</span><br><span class="line">            <span class="keyword">else</span> hi = mid - <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nums[mid] &lt; aim) &#123;</span><br><span class="line">            lo = mid + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span></span><br><span class="line">            hi = mid - <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>（2） 查找含有重复元素的数组集合中元素最后一次出现的位置</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binarySearchLast</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> key, <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (lo &lt;= hi) &#123;</span><br><span class="line">        <span class="keyword">int</span> mid = (hi - lo) / <span class="number">2</span> + lo;</span><br><span class="line">        <span class="keyword">if</span> (nums[mid] == key) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mid == nums.length - <span class="number">1</span> || nums[mid] != nums[mid + <span class="number">1</span>]) <span class="keyword">return</span> mid;</span><br><span class="line">            <span class="keyword">else</span> lo = mid + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nums[mid] &lt; key) &#123;</span><br><span class="line">            lo = mid + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            hi = mid - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>3、 二分查找-大于&amp;小于</strong></p>
-<p>（1） 查找小于等于给定元素的最小元素在数组中的位置</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">binarySearchFloor</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> key, <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (lo &lt;= hi) &#123;</span><br><span class="line">        <span class="keyword">int</span> mid = lo + (hi - lo) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (nums[mid] &lt;= key) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mid == nums.length-<span class="number">1</span> || nums[mid+<span class="number">1</span>] &gt; key) <span class="keyword">return</span> mid;</span><br><span class="line">            <span class="keyword">else</span> lo = mid + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            hi = mid - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>（2） 查找大于等于给定元素的最小元素在数组中的位置</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">binarySearchCeil</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> key, <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (lo &lt;= hi) &#123;</span><br><span class="line">        <span class="keyword">int</span> mid = lo + (hi - lo) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (nums[mid] &gt;= key) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mid == <span class="number">0</span> || nums[mid-<span class="number">1</span>] &lt; key) <span class="keyword">return</span> mid;</span><br><span class="line">            <span class="keyword">else</span> hi = mid - <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            lo = mid + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>4、 带偏移的二分查找</strong></p>
-<p>用于旋转数组的查找，偏移后数据有序；</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binarySearchOffset</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> key, <span class="keyword">int</span> offset)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> lo = <span class="number">0</span>, hi = nums.length - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (lo &lt;= hi) &#123;</span><br><span class="line">        <span class="keyword">int</span> mid = lo + (hi - lo) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">int</span> realMid = (mid + offset) % nums.length;</span><br><span class="line">        <span class="keyword">if</span> (nums[realMid] == key) &#123;</span><br><span class="line">            <span class="keyword">return</span> mid;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nums[mid] &lt; key) &#123;</span><br><span class="line">            lo = mid + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span></span><br><span class="line">            hi = mid - <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" data-id="ckhc2xmmw000cxcvx0nar1y95" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
 
     </footer>
   </div>
@@ -905,7 +933,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
     </div>
   </div>
 
@@ -915,7 +943,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 13.33px;">Linux</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 20px;">大数据</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 16.67px;">算法</a>
+      <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 13.33px;">Linux</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 20px;">大数据</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 16.67px;">算法</a>
     </div>
   </div>
 
@@ -937,6 +965,10 @@
       <ul>
         
           <li>
+            <a href="/2020/11/10/React-HOC/">React HOC</a>
+          </li>
+        
+          <li>
             <a href="/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">Linux 常用命令</a>
           </li>
         
@@ -950,10 +982,6 @@
         
           <li>
             <a href="/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Hadoop 集群环境搭建</a>
-          </li>
-        
-          <li>
-            <a href="/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/">MapReduce 中的排序</a>
           </li>
         
       </ul>
