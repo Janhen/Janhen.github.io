@@ -64,6 +64,227 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Linux-常用服务" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" class="article-date">
+  <time datetime="2020-11-10T13:21:25.000Z" itemprop="datePublished">2020-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/">Linux 常用服务</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>[TOC]</p>
+<h2 id="SSH"><a href="#SSH" class="headerlink" title="SSH"></a>SSH</h2><blockquote>
+<p>默认安装好客户端，对于海外的服务器进行转发有时连接效果较好</p>
+</blockquote>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>存放在 <code>~/.ssh/config</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.ssh/config</span><br></pre></td></tr></table></figure>
+
+<p>端口更改</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/ssh/sshd_config</span><br><span class="line">service sshd restart</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">如果 60s 内没用任何数据,将会自动断开。</span><br><span class="line">vim /etc/ssh/ssh_config</span><br><span class="line"><span class="meta">#</span><span class="bash">添加</span></span><br><span class="line">ServerAliveInterval 50</span><br><span class="line">ServerAliveCountMax 3</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>SSH 免密码密钥认证</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br><span class="line"><span class="meta">#</span><span class="bash"> 将公钥传递给远程 root </span></span><br><span class="line">ssh-copy-id -i /root/.ssh/id_rsa.pub root@172.17.10.158</span><br><span class="line">ssh-copy-id -i /root/.ssh/id_rsa.pub root@192.168.80.207</span><br><span class="line">ssh-copy-id -i /root/.ssh/id_rsa.pub root@192.168.80.179</span><br><span class="line">ssh-copy-id -i /root/.ssh/id_rsa.pub root@192.168.80.134</span><br><span class="line">ssh-copy-id -i /root/.ssh/id_rsa.pub root@192.168.80.62</span><br><span class="line">ssh-copy-id -i /root/.ssh/id_rsa.pub -oPort=6000 root@127.0.0.1</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>SSH 文件传输</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 复制指定文件</span></span><br><span class="line">scp root@172.17.10.153:frp_0.13.0_linux_amd64.tar.gz frp.tar.gz</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>SSH 连接执行命令</strong></p>
+<p>连接上指定的机器，同时执行指定的命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;start zookeeper server...&quot;</span><br><span class="line"><span class="meta">if(($</span><span class="bash"><span class="comment">#==0));</span></span></span><br><span class="line">then echo &quot;no params&quot;;</span><br><span class="line">exit;</span><br><span class="line">fi</span><br><span class="line">hosts=&quot;linux121 linux122 linux123&quot;</span><br><span class="line"></span><br><span class="line">for host in $hosts</span><br><span class="line">do ssh $host &quot;source /etc/profile; $1&quot;</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="crond"><a href="#crond" class="headerlink" title="crond"></a>crond</h2><blockquote>
+<p>Linux 自带的定时调度服务</p>
+</blockquote>
+<h3 id="查看"><a href="#查看" class="headerlink" title="查看"></a>查看</h3><p><strong>查看用户的定时任务</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 查看当前用户的定时任务</span><br><span class="line">crontab -l</span><br><span class="line"></span><br><span class="line"># 查看指定用户的定时任务</span><br><span class="line">crontab -u &lt;username&gt; -l</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>按照时间查看定时任务</strong></p>
+<p>查看每日的任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la &#x2F;etc&#x2F;cron.daily&#x2F;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">drwxr-xr-x.  2 root root 4096 Sep 14 15:16 .</span><br><span class="line">drwxr-xr-x. 76 root root 4096 Nov 10 21:15 ..</span><br><span class="line">-rwx------.  1 root root  219 Apr  1  2020 logrotate</span><br><span class="line">-rwxr-xr-x.  1 root root  618 Oct 30  2018 man-db.cron</span><br></pre></td></tr></table></figure>
+
+<p>查看每小时的任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la &#x2F;etc&#x2F;cron.hourly&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>查看每周的任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la &#x2F;etc&#x2F;cron.weekly&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>查看每月的任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la &#x2F;etc&#x2F;cron.monthly&#x2F;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>查看 <code>/etc/crontab</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">less &#x2F;etc&#x2F;crontab</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>查看任务执行日志</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tail -f &#x2F;var&#x2F;log&#x2F;cron</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="定义任务"><a href="#定义任务" class="headerlink" title="定义任务"></a>定义任务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+---------------- minute (0 - 59)</span><br><span class="line">|  +------------- hour (0 - 23)</span><br><span class="line">|  |  +---------- day of month (1 - 31)</span><br><span class="line">|  |  |  +------- month (1 - 12)</span><br><span class="line">|  |  |  |  +---- day of week (0 - 6) (Sunday&#x3D;0 or 7)</span><br><span class="line">|  |  |  |  |</span><br><span class="line">*  *  *  *  *  command to be executed</span><br></pre></td></tr></table></figure>
+
+
+
+<p>定时删除日志</p>
+<p>每天凌晨2点删除 <code>/usr/apps/logs</code> 目录下7天前包含 log 的日志文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 2 * * * &#x2F;usr&#x2F;bin&#x2F;find &#x2F;usr&#x2F;apps&#x2F;logs&#x2F; -type f -mtime +7 -name &quot;*log*&quot; -exec rm -rf &#123;&#125; \;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="journal"><a href="#journal" class="headerlink" title="journal"></a>journal</h2><blockquote>
+<p>日志查看服务</p>
+</blockquote>
+<p>Linux 日志分类</p>
+<ul>
+<li><p>内核及系统日志： 日志数据由系统服务 syslog 统一管理</p>
+</li>
+<li><p>用户日志：这种日志数据用于记录 Linux 系统用户登录及退出系统的相关信息</p>
+</li>
+<li><p>程序日志：有些应用程序运会选择自己来独立管理一份日志文件, 通过配置日志格式和回滚策略</p>
+</li>
+</ul>
+<p>Linux 中常用日志文件</p>
+<ul>
+<li><p>/var/log/cron： 与定时任务相关的日志信息</p>
+</li>
+<li><p>/var/log/maillog： 与邮件相关的日志信息</p>
+</li>
+<li><p>/var/log/secure： 与安全相关的日志信息, 可基于此日志过滤攻击的 IP</p>
+</li>
+<li><p>/var/log/boot.log： 守护进程启动和停止相关的日志消息</p>
+</li>
+<li><p><code>/var/log/messages</code> / <code>/var/log/syslog</code>：  存储所有的全局系统活动数据,包括启动、IO错误、网络错误、程序故障等 /varlog/dmesg：记录Linux系统在引导过程中的各种事件信息</p>
+</li>
+<li><p>/var/log/lastlog：最近几次成功登录事件和最后一次不成功登录事件</p>
+</li>
+<li><p>/var/log/wtmp：记录每个用户登录、注销及系统启动和停机事件</p>
+</li>
+<li><p>/var/log/rpmpkgs： RPM软件包日志</p>
+</li>
+<li><p>/var/log/kern： 存储内核的错误和警告数据，用于排除与定制内核相关的故障</p>
+</li>
+<li><p>/var/log/btmp： 记录错误的登陆尝试</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -f -n 1000</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="logrotate"><a href="#logrotate" class="headerlink" title="logrotate"></a>logrotate</h2><blockquote>
+<p>日志回滚服务</p>
+</blockquote>
+<p>/etc/logrotate.d/</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">tree &#x2F;etc&#x2F;logrotate.d</span><br><span class="line">&#x2F;etc&#x2F;logrotate.d</span><br><span class="line">├── bootlog</span><br><span class="line">├── chrony</span><br><span class="line">├── ppp</span><br><span class="line">├── subscription-manager</span><br><span class="line">├── syslog</span><br><span class="line">├── vsftpd</span><br><span class="line">├── wpa_supplicant</span><br><span class="line">└── yum</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>配合 cron 实现日志的分割压缩处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">logrotate &#x2F;etc&#x2F;logrotate.d&#x2F;nginx</span><br><span class="line">logrotate -d &#x2F;etc&#x2F;logrotate.d&#x2F;nginx</span><br><span class="line">logrotate -vf &#x2F;etc&#x2F;logrotate.d&#x2F;nginx</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access_log &#123;</span><br><span class="line">    rotate 7</span><br><span class="line">    size 5k</span><br><span class="line">    dateext</span><br><span class="line">    dateformat -%Y-%m-%d</span><br><span class="line">    missingok</span><br><span class="line">    compress</span><br><span class="line">    sharedscripts</span><br><span class="line">    postrotate</span><br><span class="line">        test -r &#x2F;var&#x2F;run&#x2F;nginx.pid &amp;&amp; kill -USR1 &#96;cat &#x2F;var&#x2F;run&#x2F;nginx.pid&#96;</span><br><span class="line">    endscript</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><a target="_blank" rel="noopener" href="https://serverfault.com/questions/427144/how-to-limit-nginx-access-log-file-size-and-compress">How to limit nginx access log file size and compress?</a></p>
+<h2 id="firewalld"><a href="#firewalld" class="headerlink" title="firewalld"></a>firewalld</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status firewalld</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="iptables"><a href="#iptables" class="headerlink" title="iptables"></a>iptables</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">iptables -nvL  </span><br><span class="line">  </span><br><span class="line"><span class="meta">#</span><span class="bash"> 开放指定的端口</span></span><br><span class="line">iptables -I INPUT -p tcp --dport 9000 -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 暴露docker swarm需要的端口，如果不使用docker swarm不需要打开端口</span></span><br><span class="line">iptables -A INPUT -p tcp --dport 2377 -j ACCEPT</span><br><span class="line">iptables -A INPUT -p tcp --dport 7946 -j ACCEPT</span><br><span class="line">iptables -A INPUT -p udp --dport 7946 -j ACCEPT</span><br><span class="line">iptables -A INPUT -p tcp --dport 4789 -j ACCEPT</span><br><span class="line">iptables -A INPUT -p udp --dport 4789 -j ACCEPT</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="ntpd"><a href="#ntpd" class="headerlink" title="ntpd"></a>ntpd</h2><blockquote>
+<p>时间同步工具</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install ntp</span><br><span class="line">ntpdate time.pool.aliyun.com</span><br><span class="line">systemctl enable ntpd</span><br></pre></td></tr></table></figure>
+
+<p>三台机器时钟同步</p>
+<p>时间同步的⽅式：在集群中找⼀台机器，作为时间服务器。 通过⽹络连接外⽹进⾏时钟同步,必须保证虚拟机连上外⽹</p>
+<p>ntpdate <a target="_blank" rel="noopener" href="http://us.pool.ntp.org/">us.pool.ntp.org</a>; 阿⾥云时钟同步服务器 ntpdate <a target="_blank" rel="noopener" href="http://ntp4.aliyun.com/">ntp4.aliyun.com</a></p>
+<p>集群中其他机器与这台机器定时的同步时间，⽐如每隔⼗分钟同步⼀次时间。</p>
+<p>1.时间服务器配置（必须root⽤户）</p>
+<p>第⼀步:确定是否安装了ntpd的服务</p>
+<p>如果没有安装,可以进⾏在线安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install ntpd</span><br></pre></td></tr></table></figure>
+
+<p>启动ntpd的服务 service ntpd start 设置ntpd的服务开机启动 chkconfig ntpd on第⼀步:确定是否安装了ntpd的服务 rpm -qa | grep ntpd</p>
+<p>第⼆步:编辑/etc/ntp.conf</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">编辑第⼀台机器的/etc/ntp.conf</span><br><span class="line">vim /etc/ntp.conf </span><br><span class="line"><span class="meta">#</span><span class="bash"> 在⽂件中添加如下内容 </span></span><br><span class="line">restrict 192.168.80.0 mask 255.255.255.0 nomodify</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 注释⼀下四⾏内容 </span></span><br><span class="line"><span class="meta">#</span><span class="bash">server 0.centos.pool.ntp.org </span></span><br><span class="line"><span class="meta">#</span><span class="bash">server 1.centos.pool.ntp.org </span></span><br><span class="line"><span class="meta">#</span><span class="bash">server 2.centos.pool.ntp.org </span></span><br><span class="line"><span class="meta">#</span><span class="bash">server 3.centos.pool.ntp.org </span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 去掉以下内容的注释，如果没有这两⾏注释，那就⾃⼰添加上 </span></span><br><span class="line">server 127.127.1.0 # local clock </span><br><span class="line">fudge 127.127.1.0 stratum 10</span><br></pre></td></tr></table></figure>
+
+<p>配置以下内容，保证BIOS与系统时间同步 vim /etc/sysconﬁg/ntpd 添加⼀⾏内容</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/sysconﬁg/ntpd</span><br><span class="line">SYNC_HWLOCK=yes</span><br></pre></td></tr></table></figure>
+
+<p>第三步：</p>
+<p>重新启动ntpd</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">service ntpd status</span><br><span class="line">service ntpd start</span><br></pre></td></tr></table></figure>
+
+<p>使NTP服务可以在系统引导的时候⾃动启动 ：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig ntpd on</span><br></pre></td></tr></table></figure>
+
+<p>2.其他机器配置（必须root⽤户）</p>
+<p>第⼀步：在其他机器配置10分钟与时间服务器同步⼀次</p>
+<p>crontab -e 编写脚本 另外两台机器与192.168.80.121进⾏时钟同步</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/10 * * * * /usr/sbin/ntpdate 192.168.80.121</span><br></pre></td></tr></table></figure>
+
+<p>第⼆步：修改任意机器时间</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">date -s &quot;2020-12-31 11:11:11&quot;</span><br></pre></td></tr></table></figure>
+
+<p>第三步：⼗分钟后查看机器是否与时间服务器同步</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">date</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" data-id="ckhc1s8900005qxvx9kfkg41v" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Hive-安装" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" class="article-date">
@@ -86,11 +307,28 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p><strong>安装MySQL 数据库</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># 安装 Docker</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">curl -fsSL https:&#x2F;&#x2F;get.docker.com | bash -s docker --mirror Aliyun</span><br><span class="line">curl -sSL https:&#x2F;&#x2F;get.daocloud.io&#x2F;docker | sh</span><br><span class="line">sudo yum remove docker \</span><br><span class="line">                  docker-client \</span><br><span class="line">                  docker-client-latest \</span><br><span class="line">                  docker-common \</span><br><span class="line">                  docker-latest \</span><br><span class="line">                  docker-latest-logrotate \</span><br><span class="line">                  docker-logrotate \</span><br><span class="line">                  docker-engine</span><br><span class="line"></span><br><span class="line">sudo yum install -y yum-utils \</span><br><span class="line">  device-mapper-persistent-data \</span><br><span class="line">  lvm2</span><br><span class="line"></span><br><span class="line">sudo yum-config-manager \</span><br><span class="line">    --add-repo \</span><br><span class="line">    http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;docker-ce&#x2F;linux&#x2F;centos&#x2F;docker-ce.repo</span><br><span class="line"></span><br><span class="line">systemctl start docker</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl enable docker</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># 安装 MySQL、配置 MYSQL</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">mysql_volume_root&#x3D;&#x2F;opt&#x2F;lagou&#x2F;software&#x2F;mysql</span><br><span class="line"></span><br><span class="line">mysql_container_name&#x3D;Mysql_linux121</span><br><span class="line">docker rm -f mysql_container_name</span><br><span class="line">docker run -d --name mysql_container_name \</span><br><span class="line">  --privileged \</span><br><span class="line">  --restart&#x3D;always \</span><br><span class="line">  -v $mysql_volume_root&#x2F;data:&#x2F;var&#x2F;lib&#x2F;mysql \</span><br><span class="line">  -v $mysql_volume_root&#x2F;conf&#x2F;mysqld.cnf:&#x2F;etc&#x2F;mysql&#x2F;mysql.conf.d&#x2F;mysqld.cnf \</span><br><span class="line">  -v $mysql_volume_root&#x2F;logs:&#x2F;var&#x2F;log&#x2F;mysql \</span><br><span class="line">  -p 3306:3306 \</span><br><span class="line">  -e MYSQL_ROOT_PASSWORD&#x3D;hadoop123janhen \</span><br><span class="line">  mysql:5.7</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">docker exec -it $mysql_container_name \</span><br><span class="line">  mysql -uroot -p hadoop123janhen \</span><br><span class="line">  -e &quot;SET GLOBAL validate_password_policy&#x3D;0&quot;</span><br><span class="line"></span><br><span class="line">CREATE user &#39;hive&#39;@&#39;%&#39; IDENTIFIED BY &#39;youpassword&#39;;</span><br><span class="line">GRANT ALL ON *.* TO &#39;hive&#39;@&#39;%&#39;;</span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line"></span><br><span class="line">mysql -uhive -p Hive123Hadoop</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># 安装 Hive、配置 Hive</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># 配置环境变量</span><br><span class="line">vi &#x2F;etc&#x2F;profile</span><br><span class="line">source &#x2F;etc&#x2F;profile</span><br><span class="line"></span><br><span class="line">#.</span><br><span class="line">#├── bin</span><br><span class="line">#│   ├── beeline</span><br><span class="line">#│   ├── hive</span><br><span class="line">#│   ├── hive-config.sh</span><br><span class="line">#│   ├── hiveserver2</span><br><span class="line">#│   └── schematool</span><br><span class="line">        ...</span><br><span class="line">#├── conf</span><br><span class="line">#│   ├── hive-default.xml.template</span><br><span class="line">#│   ├── hive-env.sh.template</span><br><span class="line">#│   ├── hive-site-local.xml</span><br><span class="line">          ...</span><br><span class="line">#├── hcatalog</span><br><span class="line">#│   ├── bin</span><br><span class="line">#│   ├── etc</span><br><span class="line">         ...</span><br><span class="line">#├── lib</span><br><span class="line">#│   ├── asm-3.1.jar</span><br><span class="line">#│   ├── avro-1.7.7.jar</span><br><span class="line">#│   ├── derby-10.10.2.0.jar</span><br><span class="line">#│   ├── druid-common-0.9.2.jar</span><br><span class="line">#│   ├── findbugs-annotations-1.3.9-1.jar</span><br><span class="line">#│   ├── hbase-annotations-1.1.1.jar</span><br><span class="line">#│   ├── hbase-hadoop2-compat-1.1.1.jar</span><br><span class="line">#│   ├── hbase-hadoop2-compat-1.1.1-tests.jar</span><br><span class="line">#│   ├── hbase-hadoop-compat-1.1.1.jar</span><br><span class="line">#│   ├── hive-beeline-2.3.7.jar</span><br><span class="line">#│   ├── hive-exec-2.3.7.jar</span><br><span class="line">#│   ├── hive-hcatalog-core-2.3.7.jar</span><br><span class="line">#│   ├── hive-hplsql-2.3.7.jar</span><br><span class="line">#│   ├── hive-jdbc-2.3.7.jar</span><br><span class="line">#│   ├── mysql-metadata-storage-0.9.2.jar</span><br><span class="line">#│   ├── netty-3.6.2.Final.jar</span><br><span class="line">#│   ├── snappy-java-1.0.5.jar</span><br><span class="line">#│   └── zookeeper-3.4.6.jar</span><br><span class="line">#│   └── ...</span><br><span class="line">#└── scripts</span><br><span class="line">#    └── ...</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># 启动 Hive Metastore</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># 启动 HiveServer2</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br></pre></td></tr></table></figure>
+
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckhaubsfv00058qvx0r7phtah" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckhc1s8910006qxvx9le6h25r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -195,7 +433,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckhaubsfs00038qvx301e7yjs" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckhc1s88x0003qxvxbodp7b57" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -256,7 +494,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" data-id="ckhaubsfw00068qvx1tydf0ba" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" data-id="ckhc1s8910007qxvxhqw30dn5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -327,7 +565,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/MapReduce-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/" data-id="ckhaubsfx00078qvx760baefh" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/MapReduce-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/" data-id="ckhc1s894000aqxvxaoq3dpee" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -383,7 +621,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/" data-id="ckhaubsfp00018qvxcdibh9og" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/" data-id="ckhc1s88u0001qxvx4pemejqb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -428,7 +666,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E8%A7%88/" data-id="ckhaubsg8000l8qvxhvad5ot0" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E8%A7%88/" data-id="ckhc1s896000fqxvx9aql8wd4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li></ul>
@@ -472,7 +710,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%B1%BB%E9%97%AE%E9%A2%98/" data-id="ckhaubsg8000m8qvx3qubf9au" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E6%97%8B%E8%BD%AC%E6%95%B0%E7%BB%84%E7%B1%BB%E9%97%AE%E9%A2%98/" data-id="ckhc1s897000kqxvxclj27qud" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
@@ -544,7 +782,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" data-id="ckhaubsfz000a8qvx4iuy6j2x" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" data-id="ckhc1s894000cqxvx4bdl1rj6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
@@ -841,7 +1079,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E5%9F%BA%E7%A1%80%E6%8E%92%E5%BA%8F/" data-id="ckhaubsfz000c8qvxhak41yts" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E5%9F%BA%E7%A1%80%E6%8E%92%E5%BA%8F/" data-id="ckhc1s896000hqxvxhoer1nnm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
@@ -866,7 +1104,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
     </div>
   </div>
 
@@ -876,7 +1114,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 20px;">大数据</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a>
+      <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 20px;">大数据</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a>
     </div>
   </div>
 
@@ -898,6 +1136,10 @@
       <ul>
         
           <li>
+            <a href="/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/">Linux 常用服务</a>
+          </li>
+        
+          <li>
             <a href="/2020/11/10/Hive-%E5%AE%89%E8%A3%85/">Hive 安装</a>
           </li>
         
@@ -911,10 +1153,6 @@
         
           <li>
             <a href="/2020/11/10/MapReduce-%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/">MapReduce 工作机制</a>
-          </li>
-        
-          <li>
-            <a href="/2020/11/10/HDFS-%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B/">HDFS 读写流程</a>
           </li>
         
       </ul>
