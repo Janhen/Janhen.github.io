@@ -64,6 +64,638 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Docker-学习笔记" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/12/17/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="article-date">
+  <time datetime="2020-12-17T14:41:19.000Z" itemprop="datePublished">2020-12-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/12/17/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Docker 学习笔记</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Docker-基础"><a href="#Docker-基础" class="headerlink" title="Docker 基础"></a>Docker 基础</h1><blockquote>
+<p>类似精简的 Linux 环境，含 root 权限、进程空间、用户空间和网络空间，以及运行在其中的应用程序</p>
+</blockquote>
+<p><img src="http://img.janhen.com/1566961968709.png" alt="1566961968709"></p>
+<p>Client： 客户端通过 CLI 命令与 Docker 交互<br>Docker daemon： 宿主机的守护进程，通过 RESTful 接口处理 Client 的命令，连接 Registry 进行镜像的拉取的推送，具体配置见 [Daemon配置](#Daemon 配置)<br>Registry： 保存 image 的地方，实现 image 的维护、复用<br>Image： 静态的镜像，可根据 Image 运行 container<br>Container： 依据 Image 生成的具体的容器，实际运行的程序</p>
+<p>Docker 底层实现原理：</p>
+<ul>
+<li>Namespaces：做隔离pid，net，ipc，mnt，uts</li>
+<li>Control groups(cgroups)：做资源限制</li>
+<li>Union file systems: Container和image的分层，分层文件系统</li>
+</ul>
+<h2 id="镜像"><a href="#镜像" class="headerlink" title="镜像"></a>镜像</h2><blockquote>
+<p>一个特殊的文件系统，提供容器运行时所需的程序，同时包含一些为运行时准备的配置参数，无法更改</p>
+</blockquote>
+<p><strong>镜像的获取</strong></p>
+<ul>
+<li>根据 Dockerfile 构建镜像，配合 sh 脚本实现一些定制的初始化和参数判断逻辑，可重建</li>
+<li>根据容器构建镜像，在只读镜像上操作可写容器重新打包成镜像，Docker 无状态，volume 不会打包进镜像，较少使用</li>
+<li>从远程 Registry 拉取镜像</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 从远程 registry 拉取</span></span><br><span class="line">docker commit wonderful_mendeleev janhen/centos-vim-gcc:1.0.0</span><br><span class="line"><span class="meta">#</span><span class="bash"> 从 Dockerfile 构建</span></span><br><span class="line">docker build -t janhen/myimage:1.0 .</span><br><span class="line"><span class="meta">#</span><span class="bash"> 从容器创建</span></span><br><span class="line">docker pull &lt;registry_host&gt;/&lt;username OR project_name&gt;/&lt;image_name&gt;:&lt;image_tag&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>镜像 tag</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> image 的查、交互</span></span><br><span class="line">docker images</span><br><span class="line">docker history &lt;image_id&gt;</span><br><span class="line">docker tag &lt;image_old_name&gt; &lt;image_new_name&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>镜像清理</strong></p>
+<p>处理同一个版本多次覆盖，默认查找顺序为 Local -&gt; Registry 的问题</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">   删除指定的 image</span></span><br><span class="line">docker rmi &lt;image_id OR image_name&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash">   强制删除指定|全部 image</span></span><br><span class="line">docker rmi -f $(docker images)</span><br><span class="line"><span class="meta">#</span><span class="bash">   删除 &lt;none&gt; 的镜像(<span class="comment">#)</span></span></span><br><span class="line">docker rmi $(docker images -f &quot;dangling=true&quot; -q)</span><br><span class="line">docker images | grep none | awk &#x27;&#123;print $3&#125;&#x27; | xargs docker rmi</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h2><blockquote>
+<p> 是镜像运行时的实体，构建在镜像上，可对容器进行写操作</p>
+</blockquote>
+<p><strong>Container 的启动并运行</strong></p>
+<p>单机上使用最多，控制部署时候的各种参数，包含网络、存储、密码、变量…</p>
+<p>常用的启动指定：</p>
+<ul>
+<li><p>指定网络，根据需要选择端口转发、单机桥接网络、多机网络、主机网络</p>
+</li>
+<li><p>指定文件映射，将程序中的配置文件、数据文件隔离出来，避免应容器销毁而丢失</p>
+</li>
+<li><p>指定命令，内部运行的程序自带的命令，如 Redis 中的命令控制持久化方式…</p>
+</li>
+<li><p>指定变量，通过命令方式、环境变量方式指定，让运行容器更加定制化</p>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 容器的运行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --name: 按照特定名称启动，作为容器标识</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   -d: 后台运行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   -i: 交互式运行容器，打开STDIN，用于控制台交互 </span></span><br><span class="line"><span class="meta">#</span><span class="bash">   -t: 终端方式交互, 通过 bash、shell... 进行命令式交互</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   -p: 映射宿主机与容器的端口号</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --network=&lt;value&gt;: 指定网络连接类(<span class="comment">#)</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">   -v: 进行宿主机文件与容器文件的映射(<span class="comment">#)</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --&lt;param&gt;=&lt;value&gt;: 进行特定参数指定，传入中的参数，在容器中的文件处可引用</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   -e: 指定环境变量, 对应镜像提供，与 Dockerfile 中指定的 ENV 等同，可进入容器使用 env 查看(<span class="comment">#)</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --privileged=<span class="literal">true</span>: 给容器扩展的权限</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --rm: 在容器终止运行后自动删除容器文件，避免磁盘浪费，常用于测试</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --restart=&lt;strategy&gt;: 重启策略，与 --rm 参数冲突，提供多种策略</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --entrypoint: 覆盖默认镜像的 ENTRYPOINT</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   --link: 添加链接到另一个 container, 不建议使用</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   -w: 指定工作目录，等价于 Dockerfile 中的 WORKDIR</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动过后执行一段 Shell 脚本, 用于测试环境类镜像使用</span></span><br><span class="line">docker run ubuntu:18.04 /bin/sh -c &quot;while true; do echo hello world; sleep 1; done&quot;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 以命令行方式进入容器，查看镜像具体情况</span></span><br><span class="line">docker run -it --entrypoint bash openjdk:7-jre </span><br><span class="line"><span class="meta">#</span><span class="bash"> Dockerfile 中环境变量配合运行指定 JVM 运行参数、运行端口，参数名仿照 spring-boot maven 插件</span></span><br><span class="line">docker run -d -p 7070:7070 -e JVM_OPTS=&quot;-Xms1024m -Xmx2048m&quot; -e PROGRAM_ARGS=&quot;--server.port=7070&quot; com.blinkfox/web-demo:1.0.0</span><br><span class="line">docker run -e &quot;JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=n&quot; -p 8080:8080 -p 5005:5005 -t springio/gs-spring-boot-docker</span><br><span class="line">docker run -d --name test1 \</span><br><span class="line">  -e MYENV=AAAA \ </span><br><span class="line">  busybox /bin/sh -c &quot;while true;do sleep 3600;done&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>容器的信息查看</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 容器整体信息查询</span></span><br><span class="line">docker info</span><br><span class="line">docker info | grep &quot;Docker Root Dir&quot;</span><br><span class="line">docker ps [(-a)|(-aq)]?</span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置信息</span></span><br><span class="line">docker inspect &lt;container&gt;</span><br><span class="line">docker inspect -f &#123;&#123;xx.yy&#125;&#125; &lt;container&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 交互，调试</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   日志，  -f ： follow <span class="built_in">log</span> output，持续实时显示日志，   -t:......</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   命令交互</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   在容器中执行特定命令</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 日志查看</span></span><br><span class="line">docker logs &lt;contain_id OR container_name&gt;</span><br><span class="line">docker logs -f &lt;container_id OR container_name&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 容器内部执行</span></span><br><span class="line">docker exec -it &lt;container_id&gt; bash</span><br><span class="line">docker exec &lt;container_id&gt; ip a</span><br><span class="line">docker exec -it &lt;container_id OR container_name&gt; env</span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行信息</span></span><br><span class="line">docker stat &lt;container&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>容器基础命令</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 容器的启、停</span></span><br><span class="line">docker container start|stop|restart &lt;container_id OR contaienr_name&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 导入导出</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   导出容器成指定的 tar 包</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   容器快照文件导入为*镜像*</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   URL/目录导入</span></span><br><span class="line">docker export 7691a814370e &gt; ubuntu.tar</span><br><span class="line">cat ubuntu.tar | docker import - test/ubuntu:v1.0</span><br><span class="line">docker import http://example.com/exampleimage.tgz example/imagerepo</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>容器的清理</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 删除|强制删除指定的容器</span></span><br><span class="line">docker container rm &lt;container_id OR container_name&gt;</span><br><span class="line">docker contaienr rm -f &lt;container_id OR container_name&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除所有容器</span></span><br><span class="line">docker rm $(docker ps -aq)</span><br><span class="line">docker rm -f $(docker ps -aq)</span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除已停止运行的容器(<span class="comment">#)</span></span></span><br><span class="line">docker rm $(docker ps -f &quot;status=exited&quot; -q)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>Container 交互</strong></p>
+<blockquote>
+<p>容器内部可执行的命令，特定目录存储的配置内容，可以通过 CLI 的监控命令</p>
+</blockquote>
+<p>支持更改 /etc/hosts， /etc/hostname，/etc/resolv.conf ，只针对运行时，临时的更改</p>
+<p>几种交互方式：</p>
+<ul>
+<li><p>运行时直接进入交互、运行时直接执行命令交互，包含对文件的操作、内部命令执行</p>
+</li>
+<li><p>运行后按特定终端进入交互、运行后按特定命令交互，同上</p>
+</li>
+<li><p>日志交互，logs，支持最后几行、最近的时间点、实时显示</p>
+</li>
+<li><p>基本情况，inspect，返回运行情况 JSON 字符串，可通过 Go  Templete 获取特定情况</p>
+</li>
+<li><p>运行的资源情况，stats，实时显示 CPU、内存、网络、磁盘情况</p>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 进入容器内部</span></span><br><span class="line">docker exec -it -u root jenkins sh</span><br><span class="line"><span class="meta">#</span><span class="bash"> 执行特定命令</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   创建之后执行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   在已运行的容器中执行命令</span></span><br><span class="line">docker run -it --rm ubuntu:18.04  ip a</span><br><span class="line">docker run -it --rm ubuntu:18.04 --hostname=test.com --dns=172.16.3.3 ip a</span><br><span class="line">docker run -it --rm ubuntu:18.04  cat /etc/resolv.conf</span><br><span class="line">docker exec -it gitlab cat /etc/resolv.conf</span><br><span class="line">docker exec -it gitlab cat /etc/hostname</span><br><span class="line">docker exec -it gitlab cat /etc/hosts</span><br><span class="line"><span class="meta">#</span><span class="bash"> 容器内部执行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   查看挂载情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   查看定义的环境变量</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   查看 dns 情况, 与在宿主机上的 /etc/docker/daemon.json 上配置 dns 类似?</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   查看容器IP地址配置</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   查看路由情况</span></span><br><span class="line">mount</span><br><span class="line">env</span><br><span class="line">cat /etc/resolv.conf</span><br><span class="line">ip addr show eth0</span><br><span class="line">ip route</span><br><span class="line"><span class="meta">#</span><span class="bash"> logs 查看</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   特定时间偏移, 特定时间段</span></span><br><span class="line">docker logs -f -t --since=40m --tail=10 jenkins</span><br><span class="line">docker logs -t --since=&quot;2019-08-01T13:23:37&quot; --until &quot;2018-08-31T12:23:37&quot; jenkins</span><br><span class="line"><span class="meta">#</span><span class="bash"> inpect 查看</span></span><br><span class="line">docker inspect -f &#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27; 1f1f4c1f931a</span><br><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">stat</span> 查看</span></span><br><span class="line">docker stats &lt;container_id OR container_name&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 拷贝文件，作为 Dockerfile 中 COPY 的...</span></span><br><span class="line">docker cp &lt;host_machine file OR dir&gt; &lt;container_name&gt;:&lt;container_dir&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Registry"><a href="#Registry" class="headerlink" title="Registry"></a>Registry</h2><blockquote>
+<p>Docker 的私有仓库，实现容器的复用共享</p>
+</blockquote>
+<p>发布镜像到 Registry 的方式：</p>
+<ul>
+<li><p>发布镜像到仓库</p>
+<p>  直接将本地已经构建好的镜像发布到仓库中</p>
+</li>
+<li><p>根据指定 Dockerfile 由 Docker hub 进行构建形成镜像</p>
+<p>自动在 git 发生变化的时候拉取数据进行构建重新发布到仓库上，自动构建发布，CICD</p>
+<p>保证镜像的可再生性</p>
+</li>
+</ul>
+<p>私有 Registry 搭建：</p>
+<p>官方提供的 registry</p>
+<p>Vmware 开源的 harbor，见 <a href="./B-%E5%B7%A5%E5%85%B7%E4%B8%8E%E7%8E%AF%E5%A2%83.md#harbor">工具与环境</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 登录 docker hub 账号和密码</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 推送镜像到 docker hub</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> docker hub 关联 github or bitbucket</span></span><br><span class="line">docker login 172.17.11.29:5111 -u admin -p Harbor12345</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 重命名镜像的名称(tag)</span></span><br><span class="line">docker push 172.17.11.29:5111/centos-vim-gcc:1.0.0</span><br><span class="line">docker tag janhen/centos-vim-gcc:1.0.0 172.17.11.29:5111/study-docker/centos-vim-gcc:1.0.0</span><br><span class="line">docker push 172.17.11.29:5111/study-docker/centos-vim-gcc:1.0.0</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Docker-网络"><a href="#Docker-网络" class="headerlink" title="Docker 网络"></a>Docker 网络</h2><blockquote>
+<p>进行容器之间的访问，包含单机上的访问，多台机器之间的访问； 含端口映射、容器互联</p>
+<p>关联文档:  <a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/network/">使用网络</a>  |  <a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/advanced_network/">高级网络配置</a></p>
+</blockquote>
+<p><strong>Linux 上网络访问</strong></p>
+<blockquote>
+<p> Linux 网络命名空间，进行网络的隔离</p>
+</blockquote>
+<p>Veth pair： 进行网络命名空间的连接，实现两个 net namspce 连接通信</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 网络命名空间</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ip link</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 给命名空间分配 ip 地址, 默认情况下只有 mac 地址</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动接口</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 连接双方使其网络互通</span></span><br><span class="line">ip netns list</span><br><span class="line">ip netns delete test1</span><br><span class="line">ip netns exec test2 ip link</span><br><span class="line">ip netns exec testl ip link set dev veth-testl up</span><br><span class="line">ip netns exec testz ip link set dev veth-test2 up</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Docker-网络访问"><a href="#Docker-网络访问" class="headerlink" title="Docker 网络访问"></a>Docker 网络访问</h3><blockquote>
+<p>通过link 方式实现容器之间的访问，直接通过名称而非 IP，适用于单台机器</p>
+</blockquote>
+<p><img src="http://img.janhen.com/1566531692115.png" alt="1566531692115"></p>
+<p>一个容器对应一个网络空间</p>
+<p>类似局域网连接，通过中间的交换机实现两个容器之间的通信， docker0 的内网指定默认为 172.17.0/16，自定义为 172.17.18.0/16…</p>
+<p>访问外部网络，需要经过 NAT 转换</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看容器网络， bridge 网络</span></span><br><span class="line">docker network ls</span><br><span class="line">sudo docker network inspect &lt;network_id OR network_name&gt;</span><br><span class="line">ip a</span><br><span class="line">yum install bridge-utils</span><br><span class="line"><span class="meta">#</span><span class="bash"> 展示系统当前桥接</span></span><br><span class="line">brctl show</span><br><span class="line">ip a</span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建指定类型的网络</span></span><br><span class="line">docker network create -d bridge net-my</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>Docker link 网络连接</strong></p>
+<blockquote>
+<p>通过命名 Docker 进行相连，类似网络命名空间中的 Veth pair，目前不推荐使用</p>
+<p>命令格式： –link <container_name OR container_id>:<alias></p>
+<p>替代方案： docker-compose.yml 中使用 depends_on，使用 overlay 网络</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 类似给 net-test2 添加 DNS 记录</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   link 方向性; 使用少</span></span><br><span class="line">docker run -d --name net-test2 \</span><br><span class="line">  --link net-test1 busybox \</span><br><span class="line">  /bin/sh -c &quot;while true; do sleep 3600; done&quot;</span><br><span class="line">docker exec -it net-test2 /bin/sh</span><br><span class="line">  ip a </span><br><span class="line">  ping net-test1</span><br><span class="line"><span class="meta">#</span><span class="bash"> -d 指定网络类型， bridge|overlay</span></span><br><span class="line">docker network create -d bridge net-my</span><br><span class="line">docker run -it --rm --name busybox1 --network my-net busybox sh</span><br><span class="line">docker run -it --rm --name busybox2 --network my-net busybox sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> --link &lt;name&gt; 支持通过名称访问容器 </span></span><br><span class="line">docker run -d --name flask-redis \</span><br><span class="line">  -p 5000:5000 \</span><br><span class="line">  --link redis \</span><br><span class="line">  -e REDIS_HOST=redis \</span><br><span class="line">  janhen/flask-redis </span><br><span class="line">docker run -d --name test1 \</span><br><span class="line">  -e PENG=testt1 \</span><br><span class="line">  busybox </span><br><span class="line">docker run -d --name test2 \ </span><br><span class="line">  -e PENG=testest \</span><br><span class="line">  busybox  \</span><br><span class="line">  /bin/sh -c &quot;while true; do sleep 3600; done&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>自定义网络连接</strong></p>
+<blockquote>
+<p>避免使用 –link 进行容器之间网络的连接</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dockernetwork create -d bridge net-demo</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Docker-单机网络"><a href="#Docker-单机网络" class="headerlink" title="Docker 单机网络"></a>Docker 单机网络</h3><p><strong>Docker bridge 网络</strong></p>
+<blockquote>
+<p>可以创建自己的桥接网络，进行区分，docker-compose 默认管理的容器共享同一个 bridge 网络</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建自己的桥接网络</span></span><br><span class="line">docker network create -d bridge my-bridge</span><br><span class="line">docker network ls</span><br><span class="line">brctl show</span><br><span class="line">docker run -d \</span><br><span class="line">  -- name net-test3 \</span><br><span class="line">  --network my-bridge busybox /bin/sh -c &quot;while true; do sleep 3600; done&quot;</span><br><span class="line">docker network connect mybridge net-test2</span><br></pre></td></tr></table></figure>
+
+<p>bridge 性能一般，对性能要求较高，可使用个 SR-IOV 网卡嵌入容器内。</p>
+<p><strong>Docker host 和 none网络</strong></p>
+<blockquote>
+<p>none 网络： 不会有网络信息，孤立的网络，用来做私有的工具，如保存密码??，使用场景少</p>
+<p>host 网络：无网络信息，与主机共享网络命名空间，存在端口冲突问题</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 80:80 nginx </span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Docker-多机网络"><a href="#Docker-多机网络" class="headerlink" title="Docker 多机网络"></a>Docker 多机网络</h3><blockquote>
+<p>实现多个不同机器之间的容器进行通信</p>
+</blockquote>
+<h4 id="Overlay-网络"><a href="#Overlay-网络" class="headerlink" title="Overlay 网络"></a>Overlay 网络</h4><blockquote>
+<p>依赖一个分布式存储，保存对应的 IP，防止网络(172.18.0.0/16)、容器名称等的冲突</p>
+</blockquote>
+<p>实现 Docker 的多机网络，见 [Internel 访问](#Internel 访问)</p>
+<p>两台机器之间可以相互通信，为了实现不同容器之间的通信需要借助第三方的分布式存储</p>
+<p>使用etcd 建立的 cluster 中容器名称不允许重复、Ip 地址不允许重复</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建 overlay 网络，实现多态主机之间的同步创建 overlay 网络</span></span><br><span class="line">docker network ls</span><br><span class="line">docker netword create -d overlay net-overlay-demo</span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看网络情况，子网范围，容器情况</span></span><br><span class="line">docker network inspect net-overlay-demo</span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动容器指定到 overlay 网络</span></span><br><span class="line">docker run -d --name node1-test1 \</span><br><span class="line">  --net net-overlay-demo \</span><br><span class="line">  busybox sh -c &quot;while true; do sleep 3600; done&quot;</span><br><span class="line">docker run -d --name node2-test1 \</span><br><span class="line">  --net net-overlay-demo \</span><br><span class="line">  busybox sh -c &quot;while true; do sleep 3600; done&quot;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看节点上容器的地址</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看 cluster 中网络的情况</span></span><br><span class="line">docker exec node1-test1 ip a</span><br><span class="line">docker exec node2-test1 ip a</span><br><span class="line">docker network inspect net-overlay-demo</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="Etcd-分布式存储"><a href="#Etcd-分布式存储" class="headerlink" title="Etcd 分布式存储"></a><strong>Etcd 分布式存储</strong></h4><blockquote>
+<p>存储分布式系统中的 key-val，开源免费，保证 overlay 网络中分配的容器与容器对应的IP地址在整个网络中唯一</p>
+<p>关联： <a target="_blank" rel="noopener" href="https://github.com/etcd-io/etcd">GitHub</a></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在对应的两台机器上安装 etcd，容器安装/binary 安装</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 通过命令指定好集群启动</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证 cluster 的运行情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入 etcd 文件夹执行健康检查，两台机器同时执行</span></span><br><span class="line">./etcdctl cluster-health</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 关闭 Docker 服务</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 etcd 作为分布式存储启动 docker， 手动启动 dockerd 守护进程</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证</span></span><br><span class="line">systemctl stop docker</span><br><span class="line">sudo /usr/bin/dockerd -H tcp://0.0.0.0:2375 \</span><br><span class="line">  -H unix://var/run/docker.sock \</span><br><span class="line">  --cluster-store=etcd://192.168.xx.xx:2379 \</span><br><span class="line">  --cluster-advertise=192.168.xx.xx:2375 &amp;  </span><br><span class="line">docker version</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Docker-持久化"><a href="#Docker-持久化" class="headerlink" title="Docker 持久化"></a>Docker 持久化</h2><blockquote>
+<p>将容器与数据存储隔离开，如 Mysql 运行程序与数据保存位置</p>
+</blockquote>
+<p><img src="http://img.janhen.com/202012172237411566571502370.png" alt="1566571502370"></p>
+<p>两种持久化的方式：</p>
+<ul>
+<li><p>本地 FS 的 Volumn</p>
+</li>
+<li><p>基于 plugin 的 Volume， 如 NAS</p>
+</li>
+</ul>
+<p>本机上三种持久化实现, -mount 选项选择数据卷：</p>
+<ul>
+<li><p>bind :挂载在 Linux FS 中任意位置</p>
+</li>
+<li><p>volume：统一挂载在 daemon 设置的 docker 目录下，默认为 <code>/var/lib/docker/volumes/&lt;unique_str_id OR volume_name&gt;</code></p>
+</li>
+<li><p>tmpfs： 只挂载在内存中，易丢失</p>
+</li>
+</ul>
+<p>使用命令:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker volume create -d local test</span><br><span class="line">docker volume inspect &lt;contaienr&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 清理</span></span><br><span class="line">docker volume prune &lt;&gt;</span><br><span class="line">docker volume rm &lt;&gt;</span><br><span class="line">docker run -d --mount type=bind, source=/data, destination=/redis/data xxxx</span><br><span class="line"><span class="meta">#</span><span class="bash"> 指定 :ro 容器无法对挂载数据卷内的数据进行修改</span></span><br><span class="line">docker run -d -v /webapp:/opt/webapp:ro</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>数据卷容器</strong></p>
+<p>实现多个容器操作数据，任意容器修改都可被其他容器看到</p>
+<p>–volumes-from 参数所挂载的数据卷容器无需处在运行状态</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --volumes-from dbdata xxx</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Volume"><a href="#Volume" class="headerlink" title="Volume"></a>Volume</h3><blockquote>
+<p>通过 Dockerfile 中的 Volumn 控制，在宿主机上 docker 文件下建立目录存放文件</p>
+</blockquote>
+<p>建议 -v 参数指定在 docker 目录下 volume 的名称，默认为 <code>/var/lib/docker/volumes/&lt;-v_name OR long_str&gt;</code></p>
+<p>针对官方镜像，到 Docker Hub 上查看对应的 volume 挂载目录位置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建 volume，查看所有|指定|删除volume</span></span><br><span class="line">docker volume create volume1</span><br><span class="line">docker volume ls</span><br><span class="line">docker volume inspect volume1</span><br><span class="line">docker volume rm volume2</span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行-&gt;删除-&gt;验证</span></span><br><span class="line">docker run -d -v mysql1:/var/lib/mysql  \</span><br><span class="line">  --name mysql1  \</span><br><span class="line">  -e MYSQL_ALLOW_EMPTY_PASSWORD=true mysql </span><br><span class="line">docker rm -f  mysql1 mysql2</span><br><span class="line">docker run -d -v mysql1:/var/lib/mysql --name mysql1 -e MYSQL_ALLOW_EMPTY_PASSWORD=true mysql </span><br><span class="line">docker exec -it mysql2 /bin/bash</span><br><span class="line">  mysql -u root</span><br><span class="line">  show databases;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Bind-Mouting"><a href="#Bind-Mouting" class="headerlink" title="Bind Mouting"></a>Bind Mouting</h3><blockquote>
+<p>指定容器目录与宿主机目录绑定，宿主机文件更改影响到容器中的运行</p>
+</blockquote>
+<p>可以实现本台电脑  –&gt;  虚拟机  –&gt;  容器三者的目录映射</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> -v: &lt;宿主机目录&gt;:&lt;容器目录&gt; 进行一一映射</span></span><br><span class="line">docker run -d -v $(pwd):/usr/share/nginx/html -p 80:80 --name web janhen/my-nginx</span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 Docker 作为本地开发环境</span></span><br><span class="line">docker run -d -p 80:5000  --name flask janhen/flask-skeleton </span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Dockerfile-编写"><a href="#Dockerfile-编写" class="headerlink" title="Dockerfile 编写"></a>Dockerfile 编写</h2><blockquote>
+<p>用于生成 Docker Image 的文件，一般只用于 <code>docker build -t janhen/xx:99 .</code> 命令执行使用 </p>
+<p>关联： <a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/appendix/best_practices.html#dockerfile-%E6%8C%87%E4%BB%A4">Dockerfile 指令</a></p>
+</blockquote>
+<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><p><strong>Dockerfile 的基本语法</strong></p>
+<blockquote>
+<p>FROM,WORKDIR,ENV,COPY,ADD</p>
+<p>RUN,CMD,ENTRYPOINT</p>
+<p>VOLUME,EXPOSE</p>
+</blockquote>
+<ul>
+<li><p><code>FROM</code>： 根据特定的镜像制作，从头制作、 根据指定环境制作、某个镜像作为构建阶段使用</p>
+</li>
+<li><p><code>RUN </code>： 运行命令脚本, 可以通过此安装一些环境并对环境进行配置，如安装 Node 环境，每运行一个命令增加一层 ==&gt;  建议将多个命令合并成一个命令使用</p>
+</li>
+<li><p><code>WORKDIR</code>： 设定当前工作目录, 类似 cd 改变目录, 没有目录自动创建(#)<br>  直接通过绝对路径定位<br>  通过绝对路径+相对路径定位目录</p>
+</li>
+<li><p><code>ADD and COPY</code>： 将本地文件添加到 docker image 中,常 配合 WORKDIR 使用</p>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">FROM python:3.7</span><br><span class="line"><span class="meta">#</span><span class="bash"> LABEL 镜像的 metadata，帮助信息</span></span><br><span class="line">LABEL maintainer=&quot;janhen &lt;ipaam414@gmail.com&gt;&quot;</span><br><span class="line"></span><br><span class="line">RUN yum update &amp;&amp; yum install -y vim \</span><br><span class="line">  python-dev</span><br><span class="line">RUN apt-get update &amp;&amp; apt-get install -y perl \</span><br><span class="line">    pwgen --no-install-recommends &amp;&amp; rm -rf \  </span><br><span class="line">    /var/lib/apt/lists/*</span><br><span class="line">RUN /bin/bash -c &#x27;source $HOME/.bashrc;echo $HOME&#x27;</span><br><span class="line"></span><br><span class="line">WORKDIR /root</span><br><span class="line">WORKDIR /test</span><br><span class="line">WORKDIR demo</span><br><span class="line">RUN pwd</span><br><span class="line"></span><br><span class="line">ADD hello /</span><br><span class="line">ADD test.tar.gz /</span><br><span class="line">WORKDIR /root</span><br><span class="line">ADD hello test/</span><br><span class="line">COPY hello test/</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ENV 设定环境变量, 建议使用</span></span><br><span class="line">ENV MYSQL_VERSION 5.6</span><br><span class="line">RUN apt-get install -y mysql-server = &quot;$&#123;MYSQL_VERSION&#125;&quot; \</span><br><span class="line">    &amp;&amp; rm -rf /var/lib/apt/lists/*</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> CMD</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 设置容器启动后默认执行的命令和参数</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   docker run 指定其他命令, CMD 被忽略</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   定义多个 CMD，只运行最后一个</span></span><br><span class="line">docker run [image]                # CMD 会被执行</span><br><span class="line">docker run -it [image] /bin/bash  # CMD 不会执行</span><br><span class="line">CMD [&quot;mongod&quot;]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ENTRYPOINT</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 设置容器启动时运行的命令</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 容器以应用程序/服务的形式运行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   不会被忽略, 一定会执行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   最佳实践: 通过 shell 脚本作为 entrypoint </span></span><br><span class="line">COPY docker-entrypoint.sh /usr/local/bin/     # 添加到容器中</span><br><span class="line">ENTRYPOINT [&quot;docker-entrypoint.sh&quot;]           # 指定入口脚本</span><br><span class="line">EXPOSE 27017</span><br><span class="line">ENTRYPOINT [&quot;scripts/dev.sh&quot;]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进行宿主机与容器中文件的映射</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 映射容器中的 /tmp 到宿主机上，默认在 /var/lib/docker/volumes/&lt;long_id OR name&gt; 下建立对应的映射</span></span><br><span class="line">VOLUME /tmp</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>命令格式</strong></p>
+<blockquote>
+<p>不同的命令执行写法，以及对应的区别</p>
+</blockquote>
+<p>Shell 格式, 默认通过 shell 执行</p>
+<p>Exec 格式,   ENTRYPOINT [“/bin/bash”, “-c”, “echo”, “hello $name”]</p>
+<p>针对 Exec 无法映射变量问题的处理： 通过命令方式编写语句</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ENV name Docker</span><br><span class="line">ENTRYPOINT [&quot;/bin/bash&quot;, &quot;-c&quot;, &quot;echo&quot;, &quot;hello $name&quot;]</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>命令区别</strong></p>
+<p>1、RUN、CMD和ENTRYPOINT命令区别</p>
+<p>RUN 运行在 image 的构建阶段执行，执行结果会被打包进 image 文件</p>
+<p>CMD 在容器启动后执行，可用于在容器内启动某个服务、进程，只可使用一次，与 run 中年执行命令冲突</p>
+<p>ENTRYPOINT 在容器启动后执行，出现多行不会忽略，一定执行，通常配合 COPY 到容器中的 sh 脚本使用</p>
+<p>2、COPY 与 ADD 命令区别</p>
+<p>ADD 可以获取网络资源，可以直接解压缩</p>
+<p><strong>注意事项</strong></p>
+<p>1、CMD 的最后一次有效性</p>
+<p>官方镜像中大多最后运行 CMD，方便覆盖实现定制化的参数的启动</p>
+<p>2、目录</p>
+<p>COPY . /app 与 COPY . /app/ 映射不同</p>
+<h1 id="Docker-Compose"><a href="#Docker-Compose" class="headerlink" title="Docker Compose"></a>Docker Compose</h1><blockquote>
+<p>多容器管理，通过 yml 配置管理容器之间的依赖关系，底层 python 编写，前身为开源的 Fig 项目。主要用于本地开发使用。</p>
+<p>关联文档：<a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/compose/compose_file.html">Compose 模板文件</a> | <a target="_blank" rel="noopener" href="https://docs.docker.com/compose/compose-file">Doc</a></p>
+</blockquote>
+<h2 id="管理"><a href="#管理" class="headerlink" title="管理"></a>管理</h2><blockquote>
+<p>docker-compose 的启动、停止、交互</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> compose 后台启动</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动并查看日志</span></span><br><span class="line">docker-compose up</span><br><span class="line">docker-compose up -d</span><br><span class="line">docker-compose -f &lt;compose_name&gt; up -d </span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止服务</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止并删除 容器、网络、volumes</span></span><br><span class="line">docker-compose stop &lt;service&gt;</span><br><span class="line">docker-compose down &lt;service&gt;</span><br><span class="line">docker-compose build</span><br><span class="line"><span class="meta">#</span><span class="bash"> compose 查看运行情况，状态、端口情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看 compose 中定义容器使用的 images</span></span><br><span class="line">docker-compose ps</span><br><span class="line">docker-compose images</span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入 compose 中的 service</span></span><br><span class="line">docker-compose exec mysql bash</span><br><span class="line"><span class="meta">#</span><span class="bash"> 扩展</span></span><br><span class="line">docker-compose scale &lt;service_name&gt;=&lt;count&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>service 的扩展</strong></p>
+<blockquote>
+<p> 实现水平扩展，负载均衡，在不存在端口冲突的情况下通过 haproxy 进行负载均衡，在 Docker Swarm 运行时可直接通过 deploy 中的参数指定复制扩展的个数</p>
+</blockquote>
+<p>通过 docker-compose scale 命令进行扩展</p>
+<p>处理 scale 中端口映射重复问题</p>
+<p>在 docker-compose 中增加 dockercloud/haproxy 进行负载均衡</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d</span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动时指定扩展</span></span><br><span class="line">docker-compose up --scale web=3 -d</span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行后进行扩展</span></span><br><span class="line">docker-compose scale web=4</span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证扩展情况</span></span><br><span class="line">docker-compose ps</span><br><span class="line">for i in `seq 10`; do curl 127.0.0.1:8080; done</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h2 id="语法-1"><a href="#语法-1" class="headerlink" title="语法"></a>语法</h2><blockquote>
+<p>对应 docker-compose.yml 文件的语法</p>
+</blockquote>
+<p>三大实体：</p>
+<ul>
+<li><p>service: 服务</p>
+</li>
+<li><p>networks: 网络指定，指定网络类型，一般为 bridge、overlay，根据需要指定多个网络，进行一定的隔离</p>
+</li>
+<li><p>volumes: 进行数据卷的映射</p>
+</li>
+</ul>
+<hr>
+<p>image 获取方式： 通过 image 获取本地的或是拉取远程的，或者通过 build 进行构建，传入 Dockerfile 的目录以及对应的 Dockerfile 名称</p>
+<p>ports: 进行宿主端口与容器端口的映射</p>
+<p>depends_on: 解决容器的依赖，启动先后问题</p>
+<p>links: 服务之间的依赖关系，在容器内部可以直接使用依赖服务名称对应的 IP 地址，不建议使用</p>
+<p>deploy: 进行部署，控制集群中的各种情况，用于 Docker swarm，version 3 支持</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 特定片段参考</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 设置网络, 可多个</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> frontend, backend 前后端设置</span></span><br><span class="line">networks:</span><br><span class="line">  - frontend</span><br><span class="line">  - backend</span><br><span class="line"><span class="meta">#</span><span class="bash"> 端口设置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 直接引号设置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 宿主机与容器端口映射</span></span><br><span class="line">ports:</span><br><span class="line">  - &quot;6379&quot;</span><br><span class="line">ports:</span><br><span class="line">  - 5000:80</span><br><span class="line"><span class="meta">#</span><span class="bash"> 依赖</span></span><br><span class="line">depends_on:</span><br><span class="line">  - mysql</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="Docker-Swarm"><a href="#Docker-Swarm" class="headerlink" title="Docker Swarm"></a>Docker Swarm</h1><blockquote>
+<p>Docker 自带的服务编排框架，大多数都由其中的 Manager 做管理，较难定制，不适合太多节点的部署</p>
+</blockquote>
+<p>Docker Swarm 特点：</p>
+<p>符合传统IT的管理模式</p>
+<p>平台本身集成性好，可当成云管平台使用</p>
+<p>内置太多不易进行定制化，不好 Debug，不易干预</p>
+<p><strong>不提供存储选项</strong>：Docker Swarm不提供将容器连接到存储的无障碍方式，其数据量需要在主机和手动配置上进行大量即兴创作</p>
+<p><strong>监控不良</strong>：Docker Swarm提供有关容器的基本信息，如果您正在寻找基本的监控解决方案，那么Stats命令就足够了。如果您正在寻找高级监控，那么Docker Swarm永远不是一个选择。虽然有像CAdvisor这样的第三方工具可以提供更多监控，但使用Docker本身实时收集有关容器的更多数据是不可行的。</p>
+<h2 id="Swarm-架构"><a href="#Swarm-架构" class="headerlink" title="Swarm 架构"></a>Swarm 架构</h2><p><img src="http://img.janhen.com/202012172238091566634422450.png" alt="1566634422450"></p>
+<p><a target="_blank" rel="noopener" href="http://thesecretlivesofdata.com/raft/">Raft</a> consensus group： 进行控制分布式场景下的协商:  内置的分布式的存储数据库，通过 Raft 协议进行同步，包含 Leader 选举、Log 复制</p>
+<p>Internel distributed state store： 分布式存储数据库，功能如保证分布式场景下 Ip 等唯一，类似 etcd</p>
+<p>Manager: 可以保存 Raft 关联的文件，用于 Secret 实现</p>
+<p>Worker: 主要运行容器，通过 Gossip network 进行通信，保证分布式下的一致性</p>
+<p>Gossip network： 各个 Worker 之间同步实现的协议</p>
+<p>扩展：</p>
+<p>  Service: 通过 swam manager 进行控制，具体 service 部署到哪个 node 上</p>
+<p>  Replicas： 一个 Service 对应多个 Replicas，用于扩展</p>
+<h2 id="集群搭建管理"><a href="#集群搭建管理" class="headerlink" title="集群搭建管理"></a>集群搭建管理</h2><blockquote>
+<p>让几台服务器搭建成一个 Swarm Cluster</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 配置 Manager Node</span></span><br><span class="line">docker swarm init --advertise-addr=192.169.xx.xx</span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置 Worker Node 加入到特定的 Manager Node</span></span><br><span class="line">docker swarm join --token xxxfsdfsdf &lt;ip&gt;:&lt;port&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看当前 Node 情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 节点查看</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 节点降级</span></span><br><span class="line">docker node ls  </span><br><span class="line">docker node inspect &lt;node_name&gt;</span><br><span class="line">docker node demote &lt;node_name&gt;</span><br><span class="line">docker node ps</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Swarm管理"><a href="#Swarm管理" class="headerlink" title="Swarm管理"></a>Swarm管理</h2><p><strong>Swarm Services 管理</strong></p>
+<blockquote>
+<p>单个 Service 的管理，一个 Service 可扩展到多个 cluster node 上的 Container 运行</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建容器，运行位置有 mananger 进行控制运行在哪个节点上</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 类似 docker run 命令，在本地创建 container</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看 service 情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   MODE: replicated</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   REPLICAS: 1/1 支持水平扩展，类似 docker compose 中的 scale</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看具体的 service 情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   运行在哪个节点上</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 扩展servie，通过复制的方式(<span class="comment">#) </span></span></span><br><span class="line">docker service create --name demo busybox \</span><br><span class="line">  sh -c &quot;while true; do sleep 3600; done&quot;</span><br><span class="line">docker service ls</span><br><span class="line">docker service ps demo</span><br><span class="line">docker service scale demo=5</span><br><span class="line">docker service ps demo </span><br><span class="line"><span class="meta">#</span><span class="bash"> 本机查看 docker 容器运行</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 强制删除某个正在运行中的容器</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 集群自动恢复，确保一定数目的 scale 扩展有效，系统稳定运行时</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 显示节点中容器运行情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除服务，对应的集群节点容器删除</span></span><br><span class="line">docker ps</span><br><span class="line">docker rm -f e64432</span><br><span class="line">docker service ls</span><br><span class="line">docker service ps demo</span><br><span class="line">docker service rm demo</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="RoutingMesh"><a href="#RoutingMesh" class="headerlink" title="RoutingMesh"></a>RoutingMesh</h2><blockquote>
+<p>Swarm 网络通信原理，管理集群服务间的通信，访问集群中任何一个节点特定端口都会被重定向到实际运行服务的节点上</p>
+</blockquote>
+<p><img src="http://img.janhen.com/202012172238131566634990023.png" alt="1566634990023"></p>
+<p>DNS 服务发现，单机情况下可以通过 service 的名称进行相互访问，多机情况下通过 swarm 进行相互访问</p>
+<p>VIP： 非真实机器的IP地址，避免多个IP地址变化问题，造成系统运行不稳定，一个 service 对应一个</p>
+<p>LVS： 根据虚拟 IP 找出容器中的具体的 IP 地址</p>
+<p>两种体现：</p>
+<ul>
+<li>Internel：容器之间通过 overlay 网络访问</li>
+<li>Ingress ：服务绑定接口的情况，此服务通过任意 Swarm 节点对应接口访问</li>
+</ul>
+<h3 id="Internel-访问"><a href="#Internel-访问" class="headerlink" title="Internel 访问"></a>Internel 访问</h3><blockquote>
+<p>容器间实现相互访问，通过 overlay 网络实现，实现 service 与 service 之间的通信</p>
+</blockquote>
+<p><img src="http://img.janhen.com/202012172238171568514162156.png" alt="1568514162156"></p>
+<p>whoami 镜像： 提供 web 服务，访问 8000 端口，返回 container 的 hostname</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建 overlay 网络</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建 whoami 服务</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   后台运行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   端口映射</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   网络指定</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看所有 service </span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看 whoami 服务运行位置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 到对应机器上验证</span></span><br><span class="line">docker network create -d overlay net-demo</span><br><span class="line">docker service create -d \</span><br><span class="line">  --name whoami \</span><br><span class="line">  -p 8000:8000 \</span><br><span class="line">  --network net-demo jwilder/whoami</span><br><span class="line">docker service ls</span><br><span class="line">docker service ps whoami</span><br><span class="line">docker ps</span><br><span class="line">curl 127.0.0.1:8000</span><br><span class="line"><span class="meta">#</span><span class="bash"> 创建 busybox 的容器</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   连接到同一个 overlay 网络</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看所有服务，当前 busybox service 是否启动完成</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看服务 client 服务具体位置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入对应的机器查看对应运行的 container</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入容器</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   10.0.0.7 IP 地址，为虚拟 IP， 将 whoiam 通过 scale 扩展</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 通过 scale 进行扩展 whoami </span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看 whoami 位置，并进入</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入对应 client contaienr 中</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   连接 whoami </span></span><br><span class="line"><span class="meta">#</span><span class="bash">   查询 dns，只有一个虚拟IP 10.0.0.7</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入容器 whoami 查看网络地址</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入容器 whoami(另一) 查看网络地址</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入容器 client</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   查看 task.whoami，返回对应的多个节点，为真实的 IP 地址（<span class="comment">#）</span></span></span><br><span class="line">docker service create -d \</span><br><span class="line">  --name client \</span><br><span class="line">  --network net-demo busybox \</span><br><span class="line">  sh -c &quot;while true; do sleep 3600; done&quot;</span><br><span class="line">docker service ls</span><br><span class="line">docker service ps client</span><br><span class="line">docker ps</span><br><span class="line">docerer exec -it &lt;container_id&gt; sh</span><br><span class="line">  ping whoami    </span><br><span class="line">docker service scale whoami=2    </span><br><span class="line">docker service ps whoami</span><br><span class="line">docker service ps client</span><br><span class="line">docker exec -it &lt;container_client_id&gt; sh </span><br><span class="line">  ping whoami </span><br><span class="line">  nslookup whoami</span><br><span class="line">docker exec 5b79 ip a</span><br><span class="line">docker exec	df9 ip a</span><br><span class="line">docerk exec -it &lt;container_client_id&gt; sh</span><br><span class="line">  nslookup task.whoami</span><br><span class="line"><span class="meta">#</span><span class="bash"> 扩展 whoami 服务</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查案 client 对应的 task.whoami，显示三个对应的(whoami)IP 地址</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   ==&gt; 虚拟IP: 不会随 service 的扩展而变化, 包括增加、减少、机器之间的迁移不会变化(<span class="comment">#)</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 访问多次服务 whoami，相应的对应机器上的容器会因为负载均衡而不同，通过 LVS 实现</span></span><br><span class="line">docker service scale whoami=3</span><br><span class="line">docker service ps whoami</span><br><span class="line">---</span><br><span class="line">  nslookup task.whoami</span><br><span class="line">  wget whoami:8000</span><br><span class="line">  more index.html</span><br><span class="line">  rm -rf index.html</span><br><span class="line">  wget whoami:8000</span><br></pre></td></tr></table></figure>
+
+<p>两种体现：</p>
+<p>Internal: 容器键通过 overlay 网络(VIP)访问</p>
+<p>Ingress: 服务绑定接口, 通过任意 swarm 节点的接口访问’</p>
+<p>DNS + VIP + iptables + LVS 实现的过程图：</p>
+<p>// todo 具体 Swarm 网络中数据的流动情况</p>
+<p>小结： 容器之间连接到 overlay 网络进行通信，service 之间的通信通过  VIP + LVS 实现</p>
+<h3 id="Ingress-负载均衡"><a href="#Ingress-负载均衡" class="headerlink" title="Ingress 负载均衡"></a>Ingress 负载均衡</h3><blockquote>
+<p>绑定端口实现的容器之间的访问，通过 <node_ip>:<service_port> 直接访问服务</p>
+<p>作用体现：集群中的 Node 对应的端口提供相同的服务，即使 Node 本地无服务也支持访问</p>
+</blockquote>
+<p>Ingress Network 的数据包走向图</p>
+<p><img src="http://img.janhen.com/202012172238261568515008492.png" alt="1568515008492"></p>
+<p>在  IPTables + IPVS 发往目的网络</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 常看网络桥接情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看机器的网络命令空间</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入 ingress_sbox 网络命名空间</span></span><br><span class="line">iptables</span><br><span class="line">brctl show</span><br><span class="line">sudo ls /var/run/docker/netns</span><br><span class="line">sudo nsenter --net=/var/run/docker/netns/ingress_sbox</span><br><span class="line">ip a</span><br><span class="line">iptables -nL -t mangle</span><br><span class="line"><span class="meta">#</span><span class="bash"> 安装 LVS 管理工具</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> </span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看 LVS 情况，展示可选的服务 IP 地址，展示机器的 weight, </span></span><br><span class="line">yum install ipvsadm</span><br><span class="line">sudo nsenter --net=/var/run/docker/netns/ingress_sbox</span><br><span class="line">iptables -nL -t mangle</span><br><span class="line">ipvsadm -l</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="Docker-Stack-部署"><a href="#Docker-Stack-部署" class="headerlink" title="Docker Stack 部署"></a>Docker Stack 部署</h2><blockquote>
+<p>进行多服务部署，可以使用 docker-compose.yml ，只能用于 swarm cluster，无法用于其他的服务编排框架</p>
+</blockquote>
+<p>docker-compose.yml 文件更改</p>
+<p>compose file version 3: 增加 <a target="_blank" rel="noopener" href="https://docs.docker.com/compose/compose-file/#deploy">deploy</a> 命令，具体参数如下</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># deploy</span></span><br><span class="line"><span class="comment">#   endpoint_mode: vip 模式(默认), dnsrr 模式 循环访问(少用)</span></span><br><span class="line"><span class="comment">#   labels: 帮助描述信息</span></span><br><span class="line"><span class="comment">#   mode: global, replicated， global 全局唯一, 无法通过 scale 横向扩展，一般外部服务使用此种方式，如 mysql,nginx,redis等； replicated 默认，可通过复制来进行扩展</span></span><br><span class="line"><span class="comment">#   placement:   </span></span><br><span class="line"><span class="comment">#     constraint: </span></span><br><span class="line"><span class="comment">#       - node.role == manager # 限制部署到 manager 节点上</span></span><br><span class="line"><span class="comment">#     preferences: 优先喜好</span></span><br><span class="line"><span class="comment">#       -</span></span><br><span class="line"><span class="comment">#   replicas: 在 mod 是 replicated 的时候定义初始化时候需要的 replicas</span></span><br><span class="line"><span class="comment">#   resources: 进行资源的限制</span></span><br><span class="line"><span class="comment">#     limits:</span></span><br><span class="line"><span class="comment">#       cpus: &#x27;0.50&#x27;  # CPU 使用限制</span></span><br><span class="line"><span class="comment">#       memeory: 50M  # 内存使用限制</span></span><br><span class="line"><span class="comment">#     reservations:   # 优先保留，最小的情况</span></span><br><span class="line"><span class="comment">#       cpus: &#x27;0.25&#x27;</span></span><br><span class="line"><span class="comment">#       memory: 20M</span></span><br><span class="line"><span class="comment">#   restart_policy:         # 容器宕机后的处理</span></span><br><span class="line"><span class="comment">#     conditon: on-failure  # 什么情况下重启</span></span><br><span class="line"><span class="comment">#     delay: 5s             # 延迟</span></span><br><span class="line"><span class="comment">#     max_attempts: 3       # 最大重试次数</span></span><br><span class="line"><span class="comment">#     window: 120s</span></span><br><span class="line"><span class="comment">#   update_config:          # service 更新的配置</span></span><br><span class="line"><span class="comment">#     parallelism: 2</span></span><br><span class="line"><span class="comment">#     delay: 10s</span></span><br><span class="line"><span class="comment">#     order: stop-first</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>部署的过程：</p>
+<p>更改单机的 docker-compose.yml 为对应 cluster 部署(deploy)</p>
+<p>按条件执行命令： 如下</p>
+<p>验证： 通过访问任意一个 cluster 中的地址即可访问</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 整个 application 定义为一个 stack 为 wordpress</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   可通过 -c=docker-compose.yml 进行简化</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看运行情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   mysql: 限制只运行一个，只能运行在 manager 节点</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 通过 stack 查看服务情况</span></span><br><span class="line">docker stack deploy wordpress --compose-file=docker-compose.yml</span><br><span class="line">docker stack ls</span><br><span class="line">docker stack ps wordpress</span><br><span class="line">docker stack services wordpress</span><br><span class="line">docker stack rm wordpress</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Docker-Secret-管理"><a href="#Docker-Secret-管理" class="headerlink" title="Docker Secret 管理"></a>Docker Secret 管理</h2><blockquote>
+<p>对一些密码进行管理， 处理 docker-compose.yml 中存储密码不安全问题，借助内部分布式存储数据库控制，只作用于 Docker Swarm</p>
+<p>关联： <a target="_blank" rel="noopener" href="https://docs.docker.com/engine/reference/commandline/secret/">Doc-CLI</a></p>
+</blockquote>
+<p><img src="http://img.janhen.com/202012172238471566631044524.png" alt="1566631044524"></p>
+<p>Secret 类型： username password， SSH key, TLS 认证，不想让人看到的数据</p>
+<p>生产环境至少要两个 Manager，分布式存储的天然加密环境</p>
+<p>Secret 的管理：</p>
+<p>将 Secret 存储在 Manager 中的分布式存储中的 Raft Database</p>
+<p>Secret 给某个 service 指派</p>
+<p><strong>Service 基本使用</strong></p>
+<p>Secret 的创建方式：文件方式、输入方式。</p>
+<p>存放在容器中的 <code>/run/secrets/&lt;secret_file_name&gt;</code> 文件中</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 按文件方式进行创建</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除文件，保证安全性</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看 secret</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 借助管道按照输入方式创建 secret</span></span><br><span class="line">vim password</span><br><span class="line">docker secret create my-file-pw password</span><br><span class="line">rm -rf password</span><br><span class="line">docker secret ls</span><br><span class="line">echo &quot;mypassword&quot; | docker secret create my-input-pw</span><br><span class="line">docker secret rm my-input-pw</span><br><span class="line"><span class="meta">#</span><span class="bash"> 通过 swarm service 创建过程中指定 secret 进行使用</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入容器查看指定目录，找到 manager 通过 Raft Database 保存的 secret</span></span><br><span class="line">docker service create -d --name client \</span><br><span class="line">  --secret my-file-pw busybox \</span><br><span class="line">  sh -c &quot;while true; do sleep 3600; done&quot;</span><br><span class="line">docker service ls </span><br><span class="line">docker service ps client</span><br><span class="line">docker ps</span><br><span class="line">docker exec -it &lt;client_container_id&gt; sh</span><br><span class="line">  cd /run/secrets/</span><br><span class="line">  ls</span><br><span class="line">  cat my-file-pw # 原文</span><br><span class="line"><span class="meta">#</span><span class="bash"> 实际使用</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 在创建 service 的时候指定好 secret，并在环境变量中指定在容器中的位置</span></span><br><span class="line">docker service create -d --name db \</span><br><span class="line">  --secret my-file-pw \ </span><br><span class="line">  -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/my-file-pw mysql</span><br><span class="line">docker service ps db</span><br><span class="line">--</span><br><span class="line">docker exec -it &lt;db_container_id&gt; sh</span><br><span class="line">ls /run/secrets</span><br><span class="line">cat /run/secrets/my-file-pw</span><br><span class="line">mysql -u root -p</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>在 Stack 中的使用</strong></p>
+<p>在服务配置下增加 secrets，指定对应的 Secret</p>
+<p>对应的密码参数使用指定的 secrets 在容器中的位置</p>
+<p>可以连通创建 secret 一起使用，不建议</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -c 简化 --compose-file </span></span><br><span class="line"><span class="comment"># 查看服务是否全部启动完成</span></span><br><span class="line"><span class="string">docker</span> <span class="string">stack</span> <span class="string">deploy</span> <span class="string">wordpress</span> <span class="string">\</span></span><br><span class="line">  <span class="string">-c=docker-compose.yml</span></span><br><span class="line"><span class="string">docker</span> <span class="string">stack</span> <span class="string">services</span> <span class="string">wordpress</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Docker-Service-更新"><a href="#Docker-Service-更新" class="headerlink" title="Docker Service 更新"></a>Docker Service 更新</h2><blockquote>
+<p>在运行过程中对 service 依赖的镜像进行升级，实现升级过程中不会中断原来的服务</p>
+</blockquote>
+<h3 id="单-Service-更新"><a href="#单-Service-更新" class="headerlink" title="单 Service 更新"></a>单 Service 更新</h3><p>进行 service 的更新，不会暂停运行的项目</p>
+<p>@Q: 存在一段时间有 1.0和2.0并存的情况，如何处理??</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建 overlay 网络，启动服务</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 等待服务启动完毕</span></span><br><span class="line">docker network create -d overlay net-demo</span><br><span class="line">docker network ls</span><br><span class="line">docker service create -d --name web \</span><br><span class="line">  --publish 8080:5000 \</span><br><span class="line">  --network net-demo</span><br><span class="line">  janhen/python-flask-demo:1.0.0</span><br><span class="line">docker service ps web</span><br><span class="line"><span class="meta">#</span><span class="bash"> 扩展服务</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 检查服务运行情况</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 编写测试脚本方便验证</span></span><br><span class="line">docker service scale web=2</span><br><span class="line">docker service ps web</span><br><span class="line">curl 127.0.0.1:8080</span><br><span class="line">sh -c &quot;while true; do curl 127.0.0.1:8080&amp;&amp;sleep 1; done&quot;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 更新镜像，一般通过 Dockerfile 进行构建，指定对应更新的版本，发布到私有 registry</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行环境拉取镜像，执行更新命令</span></span><br><span class="line">docker service update --image janehn/python-plask-demo:2.0.0 web</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 更新镜像并设置参数, 覆盖 docker-compose.yml</span></span><br><span class="line">docker service update --image westos.org/game2048 \</span><br><span class="line">  --update-parallelism 10 \</span><br><span class="line">  --update-delay 10s \</span><br><span class="line">  nginx</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="端口更新"><a href="#端口更新" class="headerlink" title="端口更新"></a>端口更新</h3><blockquote>
+<p> 对 service 与宿主机的端口映射进行更改</p>
+</blockquote>
+<p>删除掉原来的端口映射，无法做到更新时业务不中断，通过 VIP + 端口实现原理导致的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker service update --publish-rm 8080:500 \</span><br><span class="line">  --publish-add 8088:5000 web</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Stack-更新"><a href="#Stack-更新" class="headerlink" title="Stack 更新"></a>Stack 更新</h3><blockquote>
+<p>更改 Swarm Cluster 中多个容器中对于镜像、网络、部署配置的更新，关联 <service>.deploy.update_config 下的配置</p>
+</blockquote>
+<p>可更改 docker-compose.yml 中 deploy 下的 update_config 控制更新时的细节，允许几个 scale 进行更新，延迟信息。。。</p>
+<p>第一次通过 deploy 进行启动进行了多 service 的部署</p>
+<p>第二次通过 deploy 部署时，自动检测到 docker-compose.yml 的变化，进行更新    </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stack deploy wordpress --compose-file docker-compose.yml </span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Docker-Swarm-监控"><a href="#Docker-Swarm-监控" class="headerlink" title="Docker Swarm 监控"></a>Docker Swarm 监控</h2><blockquote>
+<p>实现对 Docker Swarm Cluster 中运行节点上容器的监控</p>
+</blockquote>
+<h3 id="CAdvisor-InfluxDB-Grafana"><a href="#CAdvisor-InfluxDB-Grafana" class="headerlink" title="CAdvisor+InfluxDB+Grafana"></a>CAdvisor+InfluxDB+Grafana</h3><blockquote>
+<p>docker swarm集群的监控方案，开源免费</p>
+<p>cAdvisor：数据收集模块，需要部署在集群中的每一个节点上，当然前提条件是节点接受task。</p>
+<p>InfluxDB：数据存储模块</p>
+<p>Grafana：数据展示模块</p>
+</blockquote>
+<p><strong>Docker Universal Control Plane(UCP)</strong></p>
+<blockquote>
+<p>docker原厂的可视化集群管理GUI，企业级的，只支持docker EE</p>
+</blockquote>
+<p><strong>portainer</strong></p>
+<blockquote>
+<p>在集群中部署portainer的service，只能被调度给manager角色的节点</p>
+<p>关联： <a target="_blank" rel="noopener" href="https://www.portainer.io/">Web</a></p>
+</blockquote>
+<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><h2 id="Daemon-配置"><a href="#Daemon-配置" class="headerlink" title="Daemon 配置"></a>Daemon 配置</h2><blockquote>
+<p>对容器的 dockerd 守护线程进行配置</p>
+<p>关联： <a target="_blank" rel="noopener" href="https://docs.docker.com/config/daemon/">Configure the daemon</a></p>
+</blockquote>
+<p><strong>dameon.json</strong> </p>
+<p>配置文件编写：</p>
+<p>源镜像地址配置</p>
+<p>私有源非 Https 配置</p>
+<p>Debug 模式开启</p>
+<p><code>/etc/docker/daemon.json</code></p>
+<p>ip: 永久绑定到某个固定的 IP 地址</p>
+<p>bridge： 将 Docker 默认桥接到创建的网桥上</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;registry-mirrors&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;https://dockerhub.azk8s.cn&quot;</span>,</span><br><span class="line">    <span class="string">&quot;https://reg-mirror.qiniu.com&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">&quot;insecure-registries&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;172.17.11.29:80&quot;</span>,</span><br><span class="line">    <span class="string">&quot;172.17.11.29:5111&quot;</span>,</span><br><span class="line">    <span class="string">&quot;192.168.205.23:80&quot;</span>,</span><br><span class="line">    <span class="string">&quot;192.168.205.23:5111&quot;</span>,</span><br><span class="line">     <span class="string">&quot;172.17.10.150:80&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">&quot;debug&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;dns&quot;</span> : [</span><br><span class="line">    <span class="string">&quot;114.114.114.114&quot;</span>,</span><br><span class="line">    <span class="string">&quot;8.8.8.8&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">&quot;ip&quot;</span>: <span class="string">&quot;0.0.0.0&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;bridge&quot;</span>: <span class="string">&quot;bridge-my&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 更改后使其生效</span></span><br><span class="line">sudo systemctl daemon-reload</span><br><span class="line">sudo systemctl restart docker.service</span><br><span class="line">sudo systemctl status docker -l</span><br><span class="line">sudo docker info</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>设置运行时目录，存储驱动</strong></p>
+<p><strong>设置 Http/Https 代理</strong></p>
+<p>加快拉取国外访问、处理国内制作镜像无法访问国外资源问题</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 添加配置</span></span><br><span class="line">mkdir -p /etc/systemd/system/docker.service.d</span><br><span class="line">vim /etc/systemd/system/docker.service.d/http-proxy.conf</span><br><span class="line"></span><br><span class="line">[Service]    </span><br><span class="line">Environment=&quot;HTTP_PROXY=https://172.17.10.18:5720/&quot; &quot;NO_PROXY=localhost,127.0.0.1&quot;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置生效</span></span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br><span class="line">systemctl show --property=Environment docker</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 重置</span></span><br><span class="line">rm -f /etc/systemd/system/docker.service.d/http-proxy.conf</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br><span class="line">systemctl show --property=Environment docker</span><br></pre></td></tr></table></figure>
+
+<p> <a target="_blank" rel="noopener" href="https://docs.docker.com/engine/admin/systemd/#/http-proxy">Docker systemd http-proxy</a> </p>
+<h2 id="监控与管理"><a href="#监控与管理" class="headerlink" title="监控与管理"></a>监控与管理</h2><blockquote>
+<p>人工进行容器的管理、<strong>监控</strong>、资源调整、<strong>故障排除</strong>，包括日志查看、容器实时运行情况、资源重分配，在无法使用或没有监控方案情况下使用</p>
+</blockquote>
+<p><strong>dockerd 支持</strong></p>
+<blockquote>
+<p>在发生故障后，通过设置 Docker 守护线程的一些参数方便调试</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 开启守护线程的 debug 模式，给出更多的信息提示</span></span><br><span class="line">dockerd --debug \</span><br><span class="line">  --tls=true \</span><br><span class="line">  --tlscert=/var/docker/server.pem \</span><br><span class="line">  --tlskey=/var/docker/serverkey.pem \</span><br><span class="line">  --host tcp://192.169.9.2:2376</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>容器的运行日志查看</strong></p>
+<p>使用 Go 模板尽心格式化日志输出</p>
+<p>可使用日志驱动程序插件，企业版支持统一格式查看远程的日志，默认双重日志</p>
+<p><a target="_blank" rel="noopener" href="https://docs.docker.com/config/formatting/">Format command and log output</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker container inspect --format &#x27;&#123;&#123; .NetworkSettings.IPAddress &#125;&#125;&#x27; $&#123;CID&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 获取某个镜像对应的全部容器</span></span><br><span class="line">docker container ls | grep &lt;image&gt; | awk &#x27;&#123;print $1&#125;</span><br><span class="line">docker inspect -f &#x27;&#123;&#123;.HostConfig.LogConfig.Type&#125;&#125;&#x27; &lt;CONTAINER&gt;</span><br><span class="line">docker logs -f &lt;container_id&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 通过 Go 的模板语法进行格式化展示数据</span></span><br><span class="line">docker image ls --format &quot;&#123;&#123;.ID&#125;&#125;: &#123;&#123;.Repository&#125;&#125;&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>容器日志</strong></p>
+<blockquote>
+<p>在 daemon 中的日志配置，根据实际需要进行优化，可选择日志插件</p>
+</blockquote>
+<p>指定容器日志最大大小                20M</p>
+<p>最大的文件个数                            5</p>
+<p>压缩，                                           开</p>
+<p><strong>容器的运行情况</strong></p>
+<blockquote>
+<p>通过 stats 实时查看容器的资源信息</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 实时查看容器统计信息，CPU、内存、网络、磁盘</span></span><br><span class="line">docker stats 13b9203f9f0b d42877298134 44fb90cd2f2c</span><br><span class="line">docker container stats --format &quot;table &#123;&#123;.Name&#125;&#125;\t&#123;&#123;.CPUPerc&#125;&#125;\t&#123;&#123;.MemUsage&#125;&#125;&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>容器的资源分配</strong></p>
+<blockquote>
+<p>容器使用多少宿主机的资源，可以通过 docker-compose.yml 中设置</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 通过参数限定容器访问内存、CPU</span></span><br><span class="line">docker run --help | grep cpu </span><br><span class="line">docker run --help | grep memory</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>容器可用性</strong></p>
+<p>容器支持重启，可以通过 <code>--restart</code> 指定重启策略，保证可用性</p>
+<p><strong>容器网络</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看所有网络</span></span><br><span class="line">docker network ls</span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看容器网络映射</span></span><br><span class="line">docker port nostalgic_morse 5000</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>.dockerignore</strong> </p>
+<p>针对非 SpringBoot 项目，如前端项目需要忽略一些文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.git</span><br><span class="line">node_modules</span><br><span class="line">npm-debug.log</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>默认的重要文件：</strong></p>
+<p>/var/run/docker.sock</p>
+<p>/var/lib/docker/volumes/<volume_name OR long_uuid></p>
+<h2 id="Docker-卸载"><a href="#Docker-卸载" class="headerlink" title="Docker 卸载"></a><strong>Docker 卸载</strong></h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 停止并删除容器</span></span><br><span class="line">docker rm -f `docker ps -aq`</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除安装</span></span><br><span class="line">yum list installed|grep docker</span><br><span class="line"> yum -y remove docker-ce.x86_64</span><br><span class="line"> yum -y remove docker-ce-cli.x86_64</span><br><span class="line"> yum -y remove containerd.io.x86_64</span><br><span class="line"> </span><br><span class="line"><span class="meta">#</span><span class="bash"> 所有镜像、Volume删除</span></span><br><span class="line"><span class="meta"> #</span><span class="bash"> 删除 docker-compose</span></span><br><span class="line"> rm -rf /var/lib/docker</span><br><span class="line"> rm -rf /hdapp</span><br><span class="line"> rm -rf /etc/docker</span><br><span class="line"> rm -f /usr/local/bin/docker-compose</span><br><span class="line"> </span><br><span class="line"><span class="meta"> #</span><span class="bash"> 测试卸载情况</span></span><br><span class="line"> yum list installed|grep docker</span><br><span class="line"> </span><br><span class="line"><span class="meta"> #</span><span class="bash"> 删除 docker0 网卡</span></span><br><span class="line"> yum install bridge-utils</span><br><span class="line"> ip link set dev docker0 down</span><br><span class="line"> brctl delbr docker0</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Refs"><a href="#Refs" class="headerlink" title="Refs"></a>Refs</h1><p><a target="_blank" rel="noopener" href="https://jiajially.gitbooks.io/dockerguide/content/dockerIND.html">Docker-guide</a>: 中文的 GitBook</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/docker-library/docs">官方镜像示例</a>： Docker Hub 中一些镜像的开源示例</p>
+<p><a target="_blank" rel="noopener" href="https://labs.play-with-docker.com/p/blga8164315g00e59gs0">play-with-docker</a> ： 方便环境搭建， 保存 docker 4h，在网站上创建多个网络，进行互通访问</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/53260098">10分钟看懂Docker和K8S</a>： 快速入门</p>
+<p><a target="_blank" rel="noopener" href="https://zhuyasen.com/post/docker_note.html">docker学习笔记</a>： 他人博客笔记</p>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/">Docker – 从入门到实践</a></p>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/appendix/debug.html">如何调试 Docker</a>： 总结调试方法</p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/21d66ca6115e">关于对docker run –link的理解</a>： Docker 桥接网络理解</p>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/advanced_network/e">工具和示例</a>： Docker 相关工具</p>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbooks.io/docker_practice/appendix/best_practices.html#dockerfile-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">Dockerfile 最佳实践</a>： 编写 Dockerfile 的一些建议 </p>
+<p><a target="_blank" rel="noopener" href="https://blog.51cto.com/12227558/2096290">CentOS7.4—构建LVS+Keepalived高可用群集</a>： LVS </p>
+<p><a target="_blank" rel="noopener" href="https://www.centos.bz/2018/02/docker%E9%95%9C%E5%83%8F%E6%93%8D%E4%BD%9C/">docker镜像操作</a>： 容器制作、本地导入、镜像导出</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/12/17/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" data-id="ckisyd1z2001yiqvx72ua38p0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Arthas" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/12/17/Arthas/" class="article-date">
@@ -293,7 +925,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/12/17/Arthas/" data-id="ckisxonko001nw1vx5r337wtr" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/12/17/Arthas/" data-id="ckisyd1yx001kiqvxfmbe6g9p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li></ul>
@@ -331,7 +963,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/12/17/Kafka/" data-id="ckisxonk60008w1vx3cb2hsie" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/12/17/Kafka/" data-id="ckisyd1yf0008iqvxejat7ern" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a></li></ul>
@@ -880,7 +1512,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/12/17/Percona-Toolkit/" data-id="ckisxonkp001qw1vx3l482dsz" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/12/17/Percona-Toolkit/" data-id="ckisyd1yy001niqvxcekfgrsm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li></ul>
@@ -908,7 +1540,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/12/17/Blog/" data-id="ckisxonjs0000w1vxhyy529ur" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/12/17/Blog/" data-id="ckisyd1y00000iqvx04w6co21" class="article-share-link">Share</a>
       
       
     </footer>
@@ -948,7 +1580,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-id="ckisxonkh000xw1vxey1gdwnq" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-id="ckisyd1yw001jiqvxetkoe7n3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
@@ -1054,7 +1686,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/React-HOC/" data-id="ckisxonkc000jw1vx1483dkel" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/React-HOC/" data-id="ckisyd1yk000jiqvx0p32gg4v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
@@ -1675,7 +2307,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" data-id="ckisxonkp001ow1vxdnv297r4" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" data-id="ckisyd1yy001miqvxboltbqpa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
@@ -1888,7 +2520,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" data-id="ckisxonk70009w1vx7pcsdq5c" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" data-id="ckisyd1yg0009iqvx3wh5gz4u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
@@ -2006,118 +2638,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckisxonk60007w1vx1nnc4owp" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckisyd1ye0007iqvx9fa44x8w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Hadoop-集群环境搭建" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="article-date">
-  <time datetime="2020-11-09T17:23:23.000Z" itemprop="datePublished">2020-11-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%90%8E%E7%AB%AF/">后端</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Hadoop 集群环境搭建</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p><strong>集群规划</strong></p>
-<table>
-<thead>
-<tr>
-<th>框架</th>
-<th>linux121</th>
-<th>linux122</th>
-<th>linux123</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>HDFS</td>
-<td>NameNode、DataNode</td>
-<td>DataNode</td>
-<td>SecondaryNameNode、DataNode</td>
-</tr>
-<tr>
-<td>YARN</td>
-<td>NodeManager</td>
-<td>NodeManager</td>
-<td>NodeManager、ResourceManager</td>
-</tr>
-</tbody></table>
-<p><strong>安装 JDK</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /usr/local/java</span><br><span class="line">wget http://download.janhen.com/tools/jdk-8u251-linux-x64.tar.gz</span><br><span class="line">tar -zxvf jdk-8u251-linux-x64.tar.gz -C /usr/local/java</span><br><span class="line"></span><br><span class="line">vi /etc/profile</span><br><span class="line">export JAVA_HOME=/usr/local/java/jdk1.8.0_251</span><br><span class="line">export JRE_HOME=$&#123;JAVA_HOME&#125;/jre</span><br><span class="line">export CLASSPATH=.:$&#123;JAVA_HOME&#125;/lib:$&#123;JRE_HOME&#125;/lib</span><br><span class="line">export PATH=$&#123;JAVA_HOME&#125;/bin:$PATH</span><br><span class="line"></span><br><span class="line">source /etc/profile</span><br><span class="line">ln -s /usr/local/java/jdk1.8.0_251/bin/java /usr/bin/java</span><br><span class="line">java -version</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<p><strong>SSH 免密登陆</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mkdir /root/.ssh </span><br><span class="line">chmod 700 /root/.ssh</span><br><span class="line"></span><br><span class="line">cd ~/.ssh</span><br><span class="line">ssh-keygen -t rsa -P &quot;&quot;</span><br><span class="line">cat id_rsa.pub &gt;&gt; authorized_keys</span><br><span class="line"></span><br><span class="line">scp authorized_keys linux122:/root/.ssh/</span><br><span class="line">scp authorized_keys linux123:/root/.ssh/</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<p><strong>本地域名配置</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">xxx linux121</span><br><span class="line">xxx linux122</span><br><span class="line">xxx linux123</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<p>准备安装的目录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p &#x2F;opt&#x2F;janhen&#x2F;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 防火墙关闭</span></span><br><span class="line">systemctl status firewalld</span><br><span class="line">vi /etc/selinux/config</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 软件安装</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">mkdir -p /opt/janhen/</span><br><span class="line">cd /opt/janhen</span><br><span class="line">wget https://archive.apache.org/dist/hadoop/common/hadoop-2.9.2/hadoop-2.9.2.tar.gz</span><br><span class="line">tar -zxvf hadoop-2.9.2.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 环境变量配置</span></span><br><span class="line">vim /etc/profile</span><br><span class="line"></span><br><span class="line">export JAVA_HOME=/usr/local/java/jdk1.8.0_251</span><br><span class="line">export JRE_HOME=$&#123;JAVA_HOME&#125;/jre</span><br><span class="line">export CLASSPATH=.:$&#123;JAVA_HOME&#125;/lib:$&#123;JRE_HOME&#125;/lib</span><br><span class="line">export PATH=$&#123;JAVA_HOME&#125;/bin:$PATH</span><br><span class="line"></span><br><span class="line">export HADOOP_HOME=/opt/janhen/hadoop-2.9.2</span><br><span class="line">export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin</span><br><span class="line"></span><br><span class="line">source /etc/profile</span><br><span class="line">ln -s /usr/local/java/jdk1.8.0_251/bin/java /usr/bin/java</span><br><span class="line">java -version</span><br><span class="line">hadoop version</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> JDK路径明确配置给HDFS</span></span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/hadoop-env.sh</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/core-site.xml</span><br><span class="line"></span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/hdfs-site.xml</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/mapred-env.sh</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/mapred-site.xml</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/yarn-env.sh</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/yarn-site.xml</span><br><span class="line">vi $HADOOP_HOME/etc/hadoop/slaves</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 更改权限</span></span><br><span class="line">chown -R root:root $HADOOP_HOME</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 手动启动</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">hadoop namenode -format</span><br><span class="line">hadoop_tmp_dir=/home/hadoop/data/tmp</span><br><span class="line">metadata_file=fsimage_0000000000000000000</span><br><span class="line">cd $hadoop_tmp_dir/dfs/name/current</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动NameNode</span></span><br><span class="line">hadoop-daemon.sh stop namenode</span><br><span class="line">hadoop-daemon.sh start namenode</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动DataNode</span></span><br><span class="line">hadoop-daemon.sh start datanode</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动 yarn</span></span><br><span class="line">yarn-daemon.sh start resourcemanager</span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动 yarn 从即诶单</span></span><br><span class="line">yarn-daemon.sh start nodemanager</span><br><span class="line"></span><br><span class="line">jps | grep NameNode</span><br><span class="line">jps | grep DataNode</span><br><span class="line">jps | grep ResourceManager</span><br><span class="line">jps | grep NodeManager</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 集群启动</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">start-dfs.sh</span><br><span class="line">start-yarn.sh</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 测试集群</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ================================================</span></span><br><span class="line">hdfs dfs -mkdir -p /test/input</span><br><span class="line"></span><br><span class="line">cat &gt; /root/test.txt &lt;&lt;EOF</span><br><span class="line">hello hdfs ...</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">上传linxu文件到Hdfs</span></span><br><span class="line">hdfs dfs -put /root/test.txt /test/input</span><br><span class="line">hdfs dfs -get /test/input/test.txt</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> --------测试词频统计执行--------</span></span><br><span class="line">cat &gt; /root/wc.txt &lt;&lt;EOF</span><br><span class="line">hadoop mapreduce yarn</span><br><span class="line">hdfs hadoop mapreduce</span><br><span class="line">mapreduce yarn spark</span><br><span class="line">flink hql</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">hdfs dfs -ls /</span><br><span class="line">hdfs dfs -du /</span><br><span class="line">hdfs dfs -mkdir /wcinput</span><br><span class="line">hdfs dfs -put /root/wc.txt /wcinput</span><br><span class="line">hadoop jar $HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.9.2.jar wordcount /wcinput /wcoutput</span><br><span class="line">hdfs dfs -cat /wcoutput/part-r-00000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> --------日志收集--------</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动历史服务器</span></span><br><span class="line">mr-jobhistory-daemon.sh start historyserver</span><br><span class="line">jps | grep JobHistoryServer</span><br><span class="line"></span><br><span class="line">curl http://linux121:19888/jobhistory</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> --------日志配置--------</span></span><br><span class="line">yarn-daemon.sh stop resourcemanager</span><br><span class="line">yarn-daemon.sh stop nodemanager</span><br><span class="line">mr-jobhistory-daemon.sh stop historyserver</span><br><span class="line"></span><br><span class="line">yarn-daemon.sh start resourcemanager</span><br><span class="line">yarn-daemon.sh stop resourcemanager</span><br><span class="line">yarn-daemon.sh start nodemanager</span><br><span class="line">mr-jobhistory-daemon.sh start historyserver</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">19888,9000,50090,50010,6379,9092,8088,8080</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证地址</span></span><br><span class="line">jobhistory</span><br><span class="line">linux121:19888</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-<h2 id="Refs"><a href="#Refs" class="headerlink" title="Refs"></a>Refs</h2><p><a target="_blank" rel="noopener" href="https://archive.apache.org/dist/hadoop/common/hadoop-2.9.2/">Hadoop 安装包地址</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckisxonk30004w1vx3pk87xsy" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hadoop/" rel="tag">Hadoop</a></li></ul>
 
     </footer>
   </div>
@@ -2151,7 +2675,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hadoop/" rel="tag">Hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hadoop/" rel="tag">Hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
     </div>
   </div>
 
@@ -2161,7 +2685,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Hadoop/" style="font-size: 20px;">Hadoop</a> <a href="/tags/Hive/" style="font-size: 10px;">Hive</a> <a href="/tags/Kafka/" style="font-size: 10px;">Kafka</a> <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 13.33px;">Linux</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.33px;">工具</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 16.67px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
+      <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Hadoop/" style="font-size: 20px;">Hadoop</a> <a href="/tags/Hive/" style="font-size: 10px;">Hive</a> <a href="/tags/Kafka/" style="font-size: 10px;">Kafka</a> <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 13.33px;">Linux</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.33px;">工具</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 16.67px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
     </div>
   </div>
 
@@ -2183,6 +2707,10 @@
       <ul>
         
           <li>
+            <a href="/2020/12/17/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Docker 学习笔记</a>
+          </li>
+        
+          <li>
             <a href="/2020/12/17/Arthas/">Arthas</a>
           </li>
         
@@ -2196,10 +2724,6 @@
         
           <li>
             <a href="/2020/12/17/Blog/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2020/11/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式-单例模式</a>
           </li>
         
       </ul>
