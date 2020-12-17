@@ -64,6 +64,247 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Arthas" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/12/17/Arthas/" class="article-date">
+  <time datetime="2020-12-17T13:10:57.000Z" itemprop="datePublished">2020-12-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/12/17/Arthas/">Arthas</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><blockquote>
+<p><code>Arthas</code> 是Alibaba开源的Java诊断工具。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/alibaba/arthas">Github</a></p>
+</blockquote>
+<p>当你遇到以下类似问题而束手无策时，<code>Arthas</code>可以帮助你解决：</p>
+<ol>
+<li>这个类从哪个 jar 包加载的？为什么会报各种类相关的 Exception？</li>
+<li>我改的代码为什么没有执行到？难道是我没 commit？分支搞错了？</li>
+<li>遇到问题无法在线上 debug，难道只能通过加日志再重新发布吗？</li>
+<li>线上遇到某个用户的数据处理有问题，但线上同样无法 debug，线下无法重现！</li>
+<li>是否有一个全局视角来查看系统的运行状况？</li>
+<li>有什么办法可以监控到JVM的实时运行状态？</li>
+<li>怎么快速定位应用的热点，生成火焰图？</li>
+</ol>
+<h2 id="JVM-信息"><a href="#JVM-信息" class="headerlink" title="JVM 信息"></a>JVM 信息</h2><p>JVM 相关命令的</p>
+<p>1.dashboard -&gt; </p>
+<ol start="2">
+<li>thread -&gt; </li>
+</ol>
+<p>3.jvm -&gt; </p>
+<p>4.sysprop -&gt; 查看和修改JVM的系统属性  </p>
+<p>5.getstatic -&gt; 查看类的静态属性  </p>
+<h3 id="dashboard"><a href="#dashboard" class="headerlink" title="dashboard"></a>dashboard</h3><blockquote>
+<p>当前系统的实时数据面板  </p>
+<p>线程、内存、运行信息 </p>
+</blockquote>
+<img src="http://img.janhen.com/image-20201217211858202.png" alt="image-20201217211858202" style="zoom: 50%;" />
+
+
+
+<h3 id="thread"><a href="#thread" class="headerlink" title="thread"></a>thread</h3><blockquote>
+<p>当前JVM 线程堆栈信息  </p>
+</blockquote>
+<ul>
+<li>-b:  找出持有锁的</li>
+<li>-n:  根据 cpu 使用排序</li>
+<li>-i:  指定时间间隔</li>
+<li>–state <value>: 过滤线程状态</li>
+</ul>
+<p>使用最繁忙的 5个线程</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">thread -i 2000 -n 5</span><br></pre></td></tr></table></figure>
+<p>查看指定线程堆栈</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">thread &lt;id&gt;</span><br></pre></td></tr></table></figure>
+
+<p>查看特定状态的线程: RUNNABLE, TIMED_WAITING, WAITING, BLOCKED..</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">thread -i 2000 --state TIMED_WAITING</span><br><span class="line">thread -i 2000 --state RUNNABLE</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="jvm"><a href="#jvm" class="headerlink" title="jvm"></a>jvm</h3><blockquote>
+<p>查看当前JVM 的信息  </p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"> RUNTIME                                                                                                                            </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> MACHINE-NAME                          8@e57d77f3ad01                                                                               </span><br><span class="line"> JVM-START-TIME                        2020-12-10 19:38:01                                                                          </span><br><span class="line"> MANAGEMENT-SPEC-VERSION               1.2                                                                                          </span><br><span class="line"> SPEC-NAME                             Java Virtual Machine Specification                                                           </span><br><span class="line"> SPEC-VENDOR                           Oracle Corporation                                                                           </span><br><span class="line"> SPEC-VERSION                          1.8                                                                                          </span><br><span class="line"> VM-NAME                               Java HotSpot(TM) 64-Bit Server VM                                                            </span><br><span class="line"> VM-VENDOR                             Oracle Corporation                                                                           </span><br><span class="line"> VM-VERSION                            25.11-b03                                                                                    </span><br><span class="line"> INPUT-ARGUMENTS                       -Xmx4096M                                                                                    </span><br><span class="line">                                       -Xms4096M                                                                                    </span><br><span class="line">                                       -Xmn1536M                                                                                                                                                     </span><br><span class="line">       ...                                                                   </span><br><span class="line">                                                                                                                                    </span><br><span class="line"> CLASS-PATH                            ...                                                             </span><br><span class="line"> BOOT-CLASS-PATH                       ...                               </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> CLASS-LOADING                                                                                                                      </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> LOADED-CLASS-COUNT                    34980                                                                                        </span><br><span class="line"> TOTAL-LOADED-CLASS-COUNT              46897                                                                                        </span><br><span class="line"> UNLOADED-CLASS-COUNT                  11917                                                                                        </span><br><span class="line"> IS-VERBOSE                            false                                                                                        </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> COMPILATION                                                                                                                        </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> NAME                                  HotSpot 64-Bit Tiered Compilers                                                              </span><br><span class="line"> TOTAL-COMPILE-TIME                    549939(ms)                                                                                   </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> GARBAGE-COLLECTORS                                                                                                                 </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> ParNew                                5889/191768(ms)                                                                              </span><br><span class="line"> [count/time]                                                                                                                       </span><br><span class="line"> ConcurrentMarkSweep                   18/12942(ms)                                                                                 </span><br><span class="line"> [count/time]                                                                                                                       </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> MEMORY-MANAGERS                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> CodeCacheManager                      Code Cache                                                                                   </span><br><span class="line">                                                                                                                                    </span><br><span class="line">...                                                                            </span><br><span class="line">                                                                                                                                    </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> MEMORY                                                                                                                             </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> HEAP-MEMORY-USAGE                     4133945344(3.85 GiB)/4294967296(4.00 GiB)/4133945344(3.85 GiB)/289171584(275.78 MiB)         </span><br><span class="line"> [committed/init/max/used]                                                                                                          </span><br><span class="line"> NO-HEAP-MEMORY-USAGE                  398196736(379.75 MiB)/2555904(2.44 MiB)/1862270976(1.73 GiB)/340835576(325.05 MiB)           </span><br><span class="line"> [committed/init/max/used]                                                                                                          </span><br><span class="line"> PENDING-FINALIZE-COUNT                0                                                                                            </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> OPERATING-SYSTEM                                                                                                                   </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> OS                                    Linux                                                                                        </span><br><span class="line"> ARCH                                  amd64                                                                                        </span><br><span class="line"> PROCESSORS-COUNT                      6                                                                                            </span><br><span class="line"> LOAD-AVERAGE                          0.35                                                                                         </span><br><span class="line"> VERSION                               3.10.0-957.el7.x86_64                                                                        </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> THREAD                                                                                                                             </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> COUNT                                 99                                                                                           </span><br><span class="line"> DAEMON-COUNT                          75                                                                                           </span><br><span class="line"> PEAK-COUNT                            99                                                                                           </span><br><span class="line"> STARTED-COUNT                         70889                                                                                        </span><br><span class="line"> DEADLOCK-COUNT                        0                                                                                            </span><br><span class="line">                                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> FILE-DESCRIPTOR                                                                                                                    </span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------</span><br><span class="line"> MAX-FILE-DESCRIPTOR-COUNT             1048576                                                                                      </span><br><span class="line"> OPEN-FILE-DESCRIPTOR-COUNT            298                                                                                          </span><br><span class="line">Affect(row-cnt:0) cost in 19 ms.</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="sysprop"><a href="#sysprop" class="headerlink" title="sysprop"></a>sysprop</h3><blockquote>
+<p>查看当前JVM的系统属性(<code>System Property</code>)</p>
+</blockquote>
+<p>查看日志匹配，方便进行日志的收集<br>查看日志文件位置，方便日志的查看<br>查看执行的参数，SpringBoot 之后拼接的参数，方便定位自定义参数的实际指定情况<br>查看 JVM 运行的时区，方便处理日志的时间问题<br>查看运行时的版本，方便查看已知的 JDK bug 修复情况</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sysprop FILE_LOG_PATTERN</span><br><span class="line">sysprop CONSOLE_LOG_PATTER</span><br><span class="line">sysprop LOG_FILE</span><br><span class="line">sysprop sun.java.command</span><br><span class="line">sysprop user.timezone</span><br><span class="line">sysprop java.runtime.version</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="getstatic"><a href="#getstatic" class="headerlink" title="getstatic"></a>getstatic</h3><blockquote>
+<p> 查看类的静态属性 , 推荐直接使用 <code>ognl</code> 命令  </p>
+</blockquote>
+<ul>
+<li>-c: 类加载器的 hash id</li>
+<li>-E: 开启正则表达式匹配，默认通配符匹配  <ul>
+<li><code>&lt;class-pattern&gt; </code>                 Class name pattern, use either ‘.’ or ‘/‘ as separator            </li>
+<li><code>&lt;field-pattern&gt;</code>                  Field name pattern                                                </li>
+<li><code>&lt;express&gt;</code>                        the content you want to watch, written by ognl </li>
+</ul>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">getstatic com.janhen.SapConstants JOB_RUNNING_INTERVAL</span><br><span class="line">field: JOB_RUNNING_INTERVAL</span><br><span class="line">@Integer[2]</span><br><span class="line">Affect(row-cnt:1) cost in 331 ms.</span><br><span class="line"></span><br><span class="line"><span class="meta">[arthas@8]$</span><span class="bash"> getstatic com.janhen.SapConstants ALCNTC_INTERFACE_NO</span></span><br><span class="line">field: ALCNTC_INTERFACE_NO</span><br><span class="line">@String[MD038]</span><br><span class="line">Affect(row-cnt:1) cost in 33 ms.</span><br></pre></td></tr></table></figure>
+
+<p>查看私有的静态变量  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">getstatic org.springframework.amqp.rabbit.connection.CachingConnectionFactory DEFAULT_CHANNEL_CACHE_SIZE</span><br></pre></td></tr></table></figure>
+
+
+<p>查看集合信息  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">getstatic org.springframework.amqp.rabbit.connection.CachingConnectionFactory txStarts</span><br></pre></td></tr></table></figure>
+
+<p>指定的 classloader 加载的类查看</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">getstatic -c 73ad2d6 io.netty.channel.nio.NioEventLoop logger &#x27;getClass().getName()&#x27;</span><br><span class="line">field: logger</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="类加载"><a href="#类加载" class="headerlink" title="类加载"></a>类加载</h2><h3 id="sc"><a href="#sc" class="headerlink" title="sc"></a>sc</h3><blockquote>
+<p>查看JVM已加载的类信息</p>
+<p>各个字段的类型，以及访问标识符  </p>
+<p>父类信息、接口信息、类加载器信息、加载的来源文件</p>
+</blockquote>
+<p>search-class  </p>
+<ul>
+<li><p>-d, –details:  Display the details of class        </p>
+</li>
+<li><p>-f, –field: Display all the member variables<br> <class-pattern>                  Class name pattern, use either ‘.’ or ‘/‘ as separato  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sc -df org.springframework.amqp.rabbit.connection.CachingConnectionFactory*</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h3 id="sm"><a href="#sm" class="headerlink" title="sm"></a>sm</h3><blockquote>
+<p>查看已加载类的方法信息</p>
+<p>声明的类、 构造器、注解、参数、异常、类加载器</p>
+</blockquote>
+<ul>
+<li><p> -c, –classloader <value>        The hash code of the special class’s classLoader                    </p>
+</li>
+<li><p>-d, –details                    Display the details of method<br><code>&lt;class-pattern&gt;</code>                  Class name pattern, use either ‘.’ or ‘/‘ as separator<br><code>&lt;method-pattern&gt;</code>                 Method name pattern   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sm -d org.springframework.amqp.rabbit.connection.CachingConnectionFactory</span><br></pre></td></tr></table></figure>
+<p>查看具体的方法信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sm -d org.springframework.amqp.rabbit.connection.CachingConnectionFactory toString</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h3 id="classloader"><a href="#classloader" class="headerlink" title="classloader"></a>classloader</h3><blockquote>
+<p>查看classloader的继承树，urls，类加载信息</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> classloader</span><br><span class="line"> name                                                        numberOfInstances  loadedCountTotal    </span><br><span class="line"> org.springframework.boot.loader.LaunchedURLClassLoader      1                  15617               </span><br><span class="line"> java.net.URLClassLoader                                     1060               5560                </span><br><span class="line"> BootstrapClassLoader                                        1                  4535                </span><br><span class="line"> java.net.FactoryURLClassLoader                              2                  1666                </span><br><span class="line"> sun.reflect.DelegatingClassLoader                           1406               1406                </span><br><span class="line"> com.taobao.arthas.agent.ArthasClassloader                   1                  1116                </span><br><span class="line"> sun.misc.Launcher$AppClassLoader                            1                  47                  </span><br><span class="line"> com.alibaba.fastjson.util.ASMClassLoader                    1                  13                  </span><br><span class="line"> sun.misc.Launcher$ExtClassLoader                            1                  10                  </span><br><span class="line"> org.apache.cxf.common.util.ASMHelper$TypeHelperClassLoader  1                  6                   </span><br><span class="line">Affect(row-cnt:10) cost in 330 ms.</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="redefine"><a href="#redefine" class="headerlink" title="redefine"></a>redefine</h3><blockquote>
+<p>载入外部 .class，直接修改线上的代码，不能恢复  </p>
+</blockquote>
+<ul>
+<li>-c, –classloader <value>                       classLoader hashcode<br><classfilePaths>                                .class file paths  </li>
+</ul>
+<h3 id="ognl"><a href="#ognl" class="headerlink" title="*ognl"></a>*ognl</h3><blockquote>
+<p>执行ognl表达式， ognl命令实际上包含了getstatic的功能</p>
+</blockquote>
+<p><strong>查看Spring的配置</strong></p>
+<ul>
+<li>-c, –classLoader <value>                     The hash code of the special class’s classLoader, default classLoader is SystemClassLoader. </li>
+</ul>
+<p>查看 Spring 中运行时指定属性的值，先找到持有 ApplicationContext 的类对应的类加载器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sc -df com.janhen.SpringContextUtil | grep classLoaderHash</span><br><span class="line">ognl -c b1bc7ed &#x27;#spCtx=@com.janhen.SpringContextUtil@context,#spCtx.getEnvironment().getProperty(&quot;spring.redis.sentinel.nodes&quot;)&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>设置静态属性值</strong></p>
+<p>一般由配置中心修改，防止 setstatic 不知道什么时候因为什么修改的<br>应该无法更改 final 的静态变量  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ognl &#x27;#field=@demo.MathGame@class.getDeclaredField(&quot;random&quot;), #field.setAccessible(true), #field.set(null,null)&#x27;</span><br></pre></td></tr></table></figure>
+
+
+<p>替换方式实现：  可以写一个新的类，里面设置 static field的值。然后用 classloader 命令把这个新的类 load到JVM里再执行。   </p>
+<p>上传class到服务器上 redefine </p>
+<p><a target="_blank" rel="noopener" href="https://github.com/WangJi92/arthas-idea-plugin/issues/1">https://github.com/WangJi92/arthas-idea-plugin/issues/1</a>  </p>
+<h3 id="tt"><a href="#tt" class="headerlink" title="tt"></a>tt</h3><blockquote>
+<p>记录下指定方法每次调用的入参和返回信息，并能对这些不同的时间下调用进行观测</p>
+</blockquote>
+<p><code>-n &lt;count&gt;</code>: 指定次数, 通过 -n 参数指定需要记录的次数，当达到记录次数时 Arthas 会主动中断tt命令的记录过程，避免人工操作无法停止的情况</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tt -t org.springframework.amqp.rabbit.connection.CachingConnectionFactory toString</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="监控与执行"><a href="#监控与执行" class="headerlink" title="监控与执行"></a>监控与执行</h2><p>获取运行时的方法信息、返回信息、执行过程的耗时<br>通过字节码增强技术实现，使用完成之后需要执行shutdown 或者 将增强过的类执行reset 命令。  </p>
+<h3 id="monitor"><a href="#monitor" class="headerlink" title="monitor"></a>monitor</h3><p> -c, –cycle <value>                             The monitor interval (in seconds), 60 seconds by default<br>  <class-pattern>                                 Path and classname of Pattern Matching<br> <method-pattern>                                Method of Pattern Matching  </p>
+<h3 id="watch"><a href="#watch" class="headerlink" title="watch"></a>watch</h3><blockquote>
+<p>查看方法参数</p>
+</blockquote>
+<ul>
+<li><p>-n, –limits <value>                            Threshold of execution times     </p>
+</li>
+<li><p>-b, –before                                    Watch before invocation  </p>
+</li>
+<li><p>-x, –expand <value>                            Expand level of object (1 by default)  </p>
+</li>
+</ul>
+<p>查看入参对象(Object)以及返回对象(Set)</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">watch com.janhen.ConsumingRtnProcessor getBinAlreadyExistContainerBarcodes &quot;&#123;params, returnObj&#125;&quot; -b -x 2</span><br><span class="line">watch com.janhen.ConsumingRtnProcessor verifyContainer &quot;&#123;params, returnObj&#125;&quot; -b</span><br><span class="line">watch -E .*ConsumingRtnProcessor verify|verifyContainer &quot;&#123;params, returnObj&#125;&quot; -b -x 3</span><br><span class="line">watch -E .*ConsumingRtnProcessor verify|verifyBin|verifyContainer &quot;&#123;params,returnObj&#125;&quot; -b -x 3</span><br><span class="line">watch -E .*ReceiveBillDao update &quot;&#123;params,returnObj&#125;&quot; -b -x 3</span><br><span class="line">watch com.janhen.StockServiceImpl query  &quot;&#123;params,target&#125;&quot; -x 3  </span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="trace"><a href="#trace" class="headerlink" title="trace"></a>trace</h3><blockquote>
+<p>跟踪方法耗时</p>
+</blockquote>
+<p>跟踪方法的耗时情况，包含各个阶段的  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trace com.janhen.OrderBillServiceImpl getByBillNumber|query</span><br></pre></td></tr></table></figure>
+
+<p>匹配特定类的所有方法  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trace -E .*OrderServiceImpl .*</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trace -E com.janhen.OrderServiceImpl query</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><p>Configure logging drivers<br><a target="_blank" rel="noopener" href="https://docs.docker.com/config/containers/logging/configure/">https://docs.docker.com/config/containers/logging/configure/</a>  </p>
+<p>Java线上诊断神器Arthas-2<br><a target="_blank" rel="noopener" href="https://kamzhuyuqing.github.io/2018/12/20/Java%E7%BA%BF%E4%B8%8A%E8%AF%8A%E6%96%AD%E7%A5%9E%E5%99%A8Arthas-2/">https://kamzhuyuqing.github.io/2018/12/20/Java%E7%BA%BF%E4%B8%8A%E8%AF%8A%E6%96%AD%E7%A5%9E%E5%99%A8Arthas-2/</a>  </p>
+<p>技术征文 | 那些年，我用 Arthas 排查过的问题<br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/gJ4ZVvFBuiXbirjTxjwGeQ">https://mp.weixin.qq.com/s/gJ4ZVvFBuiXbirjTxjwGeQ</a>  </p>
+<p>是否可以考虑支持setstatic<br><a target="_blank" rel="noopener" href="https://github.com/alibaba/arthas/issues/641">https://github.com/alibaba/arthas/issues/641</a>  </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/12/17/Arthas/" data-id="ckiswbj7d001s62vxdd8xe57h" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Kafka" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/12/17/Kafka/" class="article-date">
@@ -90,7 +331,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/12/17/Kafka/" data-id="ckisv2ivb0008fovxcap815gw" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/12/17/Kafka/" data-id="ckiswbj6u000862vx8m1s516l" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a></li></ul>
@@ -639,7 +880,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/12/17/Percona-Toolkit/" data-id="ckisv2iw1001sfovxadu4eaf2" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/12/17/Percona-Toolkit/" data-id="ckiswbj7e001t62vx7gpb98le" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li></ul>
@@ -667,7 +908,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/12/17/Blog/" data-id="ckisv2ius0000fovxdfr78dxf" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/12/17/Blog/" data-id="ckiswbj68000062vx4t9h86fp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -707,7 +948,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-id="ckisv2ivn000xfovxcmwe281s" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-id="ckiswbj76001462vxblcc687u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
@@ -813,7 +1054,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/React-HOC/" data-id="ckisv2ivi000lfovx2uaa4lhn" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/React-HOC/" data-id="ckiswbj70000l62vxekk308uc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/" rel="tag">React</a></li></ul>
@@ -863,7 +1104,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" data-id="ckisv2ivc0009fovx1r015b9x" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" data-id="ckiswbj6v000962vx7m62h4tr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
@@ -1076,7 +1317,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" data-id="ckisv2ive000dfovxek811fgc" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Linux-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1/" data-id="ckiswbj6x000d62vxboj372y7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li></ul>
@@ -1194,7 +1435,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckisv2iva0007fovx4zpuh14y" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Hive-%E5%AE%89%E8%A3%85/" data-id="ckiswbj6t000762vx49u3ed1d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li></ul>
@@ -1302,72 +1543,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckisv2iv60004fovxezhuhdpa" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hadoop/" rel="tag">Hadoop</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-MapReduce-中的排序" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" class="article-date">
-  <time datetime="2020-11-09T17:21:07.000Z" itemprop="datePublished">2020-11-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/">MapReduce 中的排序</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>shuffle阶段的排序是默认行为，不管是否需要</p>
-<p>默认排序是按照字典顺序排序，且实现该排序的方法是 快速排序</p>
-<p>排序：重写 compareTo()方法，序列以及反序列化方法</p>
-<p>对于全局排序需要保证只有一个reduceTask</p>
-<p><strong>排序的分类</strong></p>
-<p>（1）部分排序</p>
-<p>默认的，根据输入记录的键对数据集排序，保证输出的每个文件内部排序</p>
-<p>（2）全排序</p>
-<p>最终结果只有一个文件，只设置一个 ReduceTask 可实现</p>
-<p>大型文件效率低</p>
-<p>替代方案： 创建多个排序好的文件，串联起来，使用一个分区描述输出的全局排序，如 a-g 分区、h-n分区、o-z 分区。</p>
-<p>（3）辅助排序(GroupingComparator)：</p>
-<p>让指定字段相同的key 进入到同一个 Redus 芳芳</p>
-<p>reduce 端的一个功能，决定哪些数据作为一组</p>
-<p>（4）二次排序：</p>
-<p>自定义排序中， compareTo 作为判断条件为两个的情况</p>
-<p>排序发生的阶段：</p>
-<p>Map side 发生在 spill 后 partition 前</p>
-<p>Reduce side 发生在 copy 后 reduce 前</p>
-<h3 id="GroupingComparator"><a href="#GroupingComparator" class="headerlink" title="GroupingComparator"></a>GroupingComparator</h3><p>可以自定义实现不同的 key 作为一组</p>
-<p>案例： 求出每隔订单中成交金额最大的交易</p>
-<p>可以用于实现 TopN</p>
-<p>自定义 GroupingComparator，结果进行最大值排序，在 reduce 输出时，控制只输出前 n 个数</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2020/11/10/MapReduce-%E4%B8%AD%E7%9A%84%E6%8E%92%E5%BA%8F/" data-id="ckisv2ivf000efovxfx258l6p" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2020/11/10/Hadoop-%E9%9B%86%E7%BE%A4%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="ckiswbj6q000462vxfdptdh8d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hadoop/" rel="tag">Hadoop</a></li></ul>
@@ -1414,7 +1590,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Hadoop/" style="font-size: 20px;">Hadoop</a> <a href="/tags/Hive/" style="font-size: 10px;">Hive</a> <a href="/tags/Kafka/" style="font-size: 10px;">Kafka</a> <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 13.33px;">Linux</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 10px;">工具</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 16.67px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
+      <a href="/tags/Hadoop/" style="font-size: 20px;">Hadoop</a> <a href="/tags/Hive/" style="font-size: 10px;">Hive</a> <a href="/tags/Kafka/" style="font-size: 10px;">Kafka</a> <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 13.33px;">Linux</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 13.33px;">工具</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 16.67px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
     </div>
   </div>
 
@@ -1436,6 +1612,10 @@
       <ul>
         
           <li>
+            <a href="/2020/12/17/Arthas/">Arthas</a>
+          </li>
+        
+          <li>
             <a href="/2020/12/17/Kafka/">Kafka</a>
           </li>
         
@@ -1449,10 +1629,6 @@
         
           <li>
             <a href="/2020/11/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">设计模式-单例模式</a>
-          </li>
-        
-          <li>
-            <a href="/2020/11/10/React-HOC/">React HOC</a>
           </li>
         
       </ul>
