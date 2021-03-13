@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Hive-函数 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="[TOC] 函数分类  标准函数： 一列或多列作为参数传入，返回值是一个值的函数 如 to_date(string timestamp), sqrt(double a)  聚合函数： 接收0行、多行的列，返回单一的值  表生成函数： 接收 0 、 多个输入，产生多列 、 多行输出 如 explode   123show functions;desc function upper;desc func">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hive-函数">
+<meta property="og:url" content="http://example.com/2021/03/09/Hive-%E5%87%BD%E6%95%B0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="[TOC] 函数分类  标准函数： 一列或多列作为参数传入，返回值是一个值的函数 如 to_date(string timestamp), sqrt(double a)  聚合函数： 接收0行、多行的列，返回单一的值  表生成函数： 接收 0 、 多个输入，产生多列 、 多行输出 如 explode   123show functions;desc function upper;desc func">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-03-09T13:30:52.000Z">
+<meta property="article:modified_time" content="2021-03-09T13:32:10.339Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Hive">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Hive-函数" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/" class="article-date">
+  <time datetime="2021-03-09T13:30:52.000Z" itemprop="datePublished">2021-03-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Hive-函数
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>[TOC]</p>
+<p>函数分类</p>
+<ul>
+<li><p>标准函数： 一列或多列作为参数传入，返回值是一个值的函数</p>
+<p>如 to_date(string timestamp), sqrt(double a)</p>
+</li>
+<li><p>聚合函数： 接收0行、多行的列，返回单一的值</p>
+</li>
+<li><p>表生成函数： 接收 0 、 多个输入，产生多列 、 多行输出 如 explode</p>
+</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> functions;</span><br><span class="line">desc function upper;</span><br><span class="line">desc function extended upper;</span><br></pre></td></tr></table></figure>
+
+<h2 id="基础函数"><a href="#基础函数" class="headerlink" title="基础函数"></a>基础函数</h2><h3 id="日期函数"><a href="#日期函数" class="headerlink" title="日期函数"></a>日期函数</h3><ul>
+<li>current_date:</li>
+<li>current_timestamp：</li>
+<li>year(string date)</li>
+<li>month(string date)</li>
+<li>hour(string date)</li>
+<li>minute(string date)</li>
+<li>second(string date)</li>
+<li><code>from_unixtime(bigint unixtime[, string format])</code>：转换从 1970-01-01 00:00:00 UTC 开始的秒为日期</li>
+<li><code>datediff(string enddate, string startdate)</code>: 计算时间差</li>
+<li><code>day(string date)</code> / <code>dayofmonth(date)</code>:  查询当月第几天</li>
+<li><code>weekofyear(string date)</code>: 如weekofyear(“1970-11-01 00:00:00”) = 44, weekofyear(“1970-11-01”) = 44.</li>
+<li><code>last_day(string date)</code>：查询月末的最后一天</li>
+<li><code>date_add(date/timestamp/string startdate, tinyint/smallint/int days)</code>： 增加指定多少天</li>
+<li><code>date_sub(date/timestamp/string startdate, tinyint/smallint/int days)</code>： 减少指定多少天</li>
+<li>date_sub(current_date, dayofmonth(current_date)-1)：当月第一天</li>
+<li>add_months(string start_date, int num_months, output_date_format)，<ul>
+<li>如 add_months(date_sub(current_date, dayofmonth(current_date)-1), 1)： 下月第一天</li>
+</ul>
+</li>
+<li>to_date(string timestamp)： 字符串转日期，2.1.0- 返回 String 类型，2.1.0+ 返回 date 类型</li>
+<li><code>date_format(date/timestamp/string ts, string fmt)</code>： 日期、时间戳、字符串类型格式化输出标准时间格式</li>
+<li><code>next_day(string start_date, string day_of_week)</code>： 返回第一个日期，该日期晚于start_date并命名为day_of_week。day_of_week 为两个或三个字符，如 “Mo”, “tue”, “FRIDAY”，next_day(‘2015-01-14’, ‘TU’) = 2015-01-20</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">current_date</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">CURRENT_TIMESTAMP</span>();</span><br><span class="line"><span class="comment">-- unix 时间戳转换成日期</span></span><br><span class="line"><span class="keyword">SELECT</span> FROM_UNIXTIME(<span class="number">11111111</span>);</span><br><span class="line"><span class="keyword">SELECT</span> FROM_UNIXTIME(<span class="number">11111</span>, <span class="string">&#x27;yyyyMMdd&#x27;</span>);</span><br><span class="line"><span class="keyword">SELECT</span> FROM_UNIXTIME(<span class="number">1111111</span>, <span class="string">&#x27;yyyy-MM-dd HH:mm:ss&#x27;</span>);</span><br><span class="line"><span class="comment">-- 日期转成时间戳</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">UNIX_TIMESTAMP</span>(<span class="string">&#x27;2019-09-15 14:23:00&#x27;</span>);</span><br><span class="line"><span class="comment">-- 时间差, 返回日期相差的天数</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">datediff</span>(<span class="string">&#x27;2020-04-18&#x27;</span>, <span class="string">&#x27;2019-11-21&#x27;</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">abs</span>(<span class="keyword">datediff</span>(<span class="string">&#x27;2020-04-18&#x27;</span>, <span class="string">&#x27;2019-11-21&#x27;</span>));</span><br><span class="line"><span class="comment">-- 日期为所处月的第几天</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">dayofmonth</span>(<span class="keyword">current_date</span>);</span><br><span class="line"><span class="comment">-- 日期所处月的最后一天日期</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">last_day</span>(<span class="keyword">current_date</span>);</span><br><span class="line"><span class="comment">-- 当月第一天</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">DATE_SUB</span>(<span class="keyword">current_date</span>, <span class="keyword">dayofmonth</span>(<span class="keyword">current_date</span>) - <span class="number">1</span>);</span><br><span class="line"><span class="comment">-- 下月第一天</span></span><br><span class="line"><span class="keyword">SELECT</span> add_months(<span class="keyword">date_sub</span>(<span class="keyword">current_date</span>, <span class="keyword">dayofmonth</span>(<span class="keyword">current_date</span>) - <span class="number">1</span>), <span class="number">1</span>);</span><br><span class="line"><span class="comment">-- must 字符串转换成 date yyyy-MM-dd</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">to_date</span>(<span class="string">&#x27;2020-01-01&#x27;</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">to_date</span>(<span class="string">&#x27;2020-01-01 12:12:12&#x27;</span>);</span><br><span class="line"><span class="comment">-- 日期格式化成指定的字符串</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">date_format</span>(<span class="keyword">current_timestamp</span>(), <span class="string">&#x27;yyyy-MM-dd HH:mm:ss&#x27;</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">date_format</span>(<span class="keyword">current_date</span>(), <span class="string">&#x27;yyyyMMdd&#x27;</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">date_format</span>(<span class="string">&#x27;2020-06-01&#x27;</span>, <span class="string">&#x27;yyyy-MM-dd HH:mm:ss&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p><strong>常用的日期处理</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 近3天的</span></span><br><span class="line"><span class="comment">-- 近一周的</span></span><br><span class="line">where dt &gt;= date_add(next_day(&#x27;$do_date&#x27;, &#x27;mo&#x27;), -7)</span><br><span class="line">    and dt &lt;= &#x27;$do_date&#x27;</span><br><span class="line"><span class="comment">-- 近一月的</span></span><br><span class="line">where dt &gt;= date_format(&#x27;$do_date&#x27;, &#x27;yyyy-MM-01&#x27;)</span><br><span class="line">    and dt &lt;= &#x27;$do_date&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="条件函数"><a href="#条件函数" class="headerlink" title="条件函数"></a>条件函数</h3><ul>
+<li><code>IF .. else</code></li>
+<li><code>case when.. end &lt;column-name&gt;</code>: 多个条件的时候使用</li>
+<li><code>nvl(T value, T default_value)</code>: value 为空的时候返回默认值</li>
+<li><code>COALESCE(T v1, T v2, ...)</code>: 返回参数中第一个非空值</li>
+<li><code>nullif(x, y)</code>:  相等为空，否则为x</li>
+<li>isnull / isnull( a ):</li>
+<li>assert_true(boolean condition): 不满足抛出异常</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 测试表定义</span></span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="keyword">exists</span> emp</span><br><span class="line">(</span><br><span class="line">    empno    <span class="built_in">int</span> <span class="keyword">comment</span> <span class="string">&#x27;员工号&#x27;</span>,</span><br><span class="line">    ename    <span class="keyword">string</span> <span class="keyword">comment</span> <span class="string">&#x27;员工姓名&#x27;</span>,</span><br><span class="line">    job      <span class="keyword">string</span> <span class="keyword">comment</span> <span class="string">&#x27;工作名称&#x27;</span>,</span><br><span class="line">    mgr      <span class="built_in">int</span> <span class="keyword">comment</span> <span class="string">&#x27;&#x27;</span>,</span><br><span class="line">    hiredate <span class="built_in">date</span> <span class="keyword">comment</span> <span class="string">&#x27;雇佣日期&#x27;</span>,</span><br><span class="line">    sal      <span class="built_in">int</span> <span class="keyword">comment</span> <span class="string">&#x27;薪水&#x27;</span>,</span><br><span class="line">    comm     <span class="built_in">int</span>,</span><br><span class="line">    deptno   <span class="built_in">int</span> <span class="keyword">comment</span> <span class="string">&#x27;部门号&#x27;</span></span><br><span class="line">) <span class="keyword">row</span> <span class="keyword">format</span> <span class="keyword">delimited</span> <span class="keyword">fields</span> <span class="keyword">terminated</span> <span class="keyword">by</span> <span class="string">&quot;,&quot;</span>;</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> emp;</span><br><span class="line"><span class="comment">-- if (boolean testCondition, T valueTrue, T valueFalseOrNull)</span></span><br><span class="line"><span class="comment">-- 将 emp 表的员工工资等级分类：0-1500、1500-3000、3000以上</span></span><br><span class="line"><span class="keyword">SELECT</span> sal,</span><br><span class="line">       <span class="keyword">if</span>(sal &lt;= <span class="number">1500</span>, <span class="string">&#x27;primary&#x27;</span>, </span><br><span class="line">       <span class="keyword">if</span>(sal &lt;= <span class="number">3000</span>, <span class="string">&#x27;middle&#x27;</span>, <span class="string">&#x27;advanced&#x27;</span>))</span><br><span class="line"><span class="keyword">FROM</span> emp;</span><br><span class="line"><span class="comment">-- case when 判断</span></span><br><span class="line"><span class="keyword">SELECT</span> ename,</span><br><span class="line">       deptno,</span><br><span class="line">       <span class="keyword">CASE</span></span><br><span class="line">           <span class="keyword">WHEN</span> deptno = <span class="number">10</span> <span class="keyword">THEN</span> <span class="string">&#x27;accounting&#x27;</span></span><br><span class="line">           <span class="keyword">WHEN</span> deptno = <span class="number">20</span> <span class="keyword">THEN</span> <span class="string">&#x27;research&#x27;</span></span><br><span class="line">           <span class="keyword">WHEN</span> deptno = <span class="number">30</span> <span class="keyword">THEN</span> <span class="string">&#x27;sales&#x27;</span></span><br><span class="line">           <span class="keyword">ELSE</span> <span class="string">&#x27;unknown&#x27;</span> <span class="keyword">END</span> deptname</span><br><span class="line"><span class="keyword">FROM</span> emp;</span><br><span class="line"><span class="comment">-- 返回参数中的第一个非空值；如果所有值都为 NULL，那么返回NULL</span></span><br><span class="line"><span class="keyword">select</span> sal, <span class="keyword">coalesce</span>(comm, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">from</span> emp;</span><br><span class="line"><span class="comment">-- null 判断</span></span><br><span class="line"><span class="keyword">select</span> *</span><br><span class="line"><span class="keyword">from</span> emp</span><br><span class="line"><span class="keyword">where</span> isnotnull(comm);</span><br><span class="line"><span class="comment">-- 空值转换函数 nvl(T value, T default_value)</span></span><br><span class="line"><span class="keyword">select</span> empno,</span><br><span class="line">       ename,</span><br><span class="line">       job,</span><br><span class="line">       mgr,</span><br><span class="line">       hiredate,</span><br><span class="line">       deptno,</span><br><span class="line">       sal + nvl(comm, <span class="number">0</span>) sumsal</span><br><span class="line"><span class="keyword">from</span> emp;</span><br><span class="line"><span class="comment">-- nullif(x, y) 相等为空，否则为x  </span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">nullif</span>(<span class="string">&quot;b&quot;</span>, <span class="string">&quot;b&quot;</span>), <span class="keyword">nullif</span>(<span class="string">&quot;b&quot;</span>, <span class="string">&quot;a&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="字符串函数"><a href="#字符串函数" class="headerlink" title="字符串函数"></a>字符串函数</h3><ul>
+<li><code>lower</code>：</li>
+<li><code>length</code>:</li>
+<li><code>concat</code> / <code>||</code> ：字符拼接</li>
+<li><code>concat_ws(separator, [string | array(string)]+)</code>: 可指定分隔符进行拼接</li>
+<li><code>substr</code>： 求子串, 指定开始和结束索引</li>
+<li><code>split</code>： <code>.</code> 需要进行正则转义</li>
+<li>instr(string str, string substr)： 返回substr在str中第一次出现的位置</li>
+<li>parse_url(string urlString, string partToExtract [, string keyToExtract])： 从 url 中抽取值，可抽取的值包括 HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, and USERINFO.<ul>
+<li>如 parse_url(‘<a target="_blank" rel="noopener" href="http://facebook.com/path1/p.php?k1=v1&amp;k2=v2#Ref1&#39;">http://facebook.com/path1/p.php?k1=v1&amp;k2=v2#Ref1&#39;</a>, ‘HOST’) returns ‘<a target="_blank" rel="noopener" href="http://facebook.com/">facebook.com</a>‘。</li>
+</ul>
+</li>
+<li>regexp_extract(string subject, string pattern, int index)： 按照正则匹配值<ul>
+<li>如 regexp_extract(‘foothebar’, ‘foo(.*?)(bar)’, 2)， Index 参数为 Java 的 group</li>
+</ul>
+</li>
+<li>regexp_replace(string INITIAL_STRING, string PATTERN, string REPLACEMENT):正则替换<ul>
+<li>如 regexp_replace(“foobar”, “oo|ar”, “”) returns ‘fb.’</li>
+</ul>
+</li>
+<li>get_json_object(string json_string, string path)： 从 JSON 字符串中获取特定路径值<ul>
+<li>JSON 路径只能为 [0-9a-z_], 没有大写或特殊字符, keys 不可以以 数字开头</li>
+</ul>
+</li>
+<li>str_to_map(text[, delimiter1, delimiter2])： 返回 map</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 子串截取</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">split</span>(<span class="string">&quot;www.lagou.com&quot;</span>, <span class="string">&quot;\\\\.&quot;</span>);</span><br><span class="line"><span class="keyword">select</span> empno || <span class="string">&quot; &quot;</span> || ename idname</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 字符串拼接  指定分割符拼接 concat_ws(separator, [string | array(string)]+)</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">concat_ws</span>(<span class="string">&#x27;.&#x27;</span>, <span class="string">&#x27;www&#x27;</span>, <span class="built_in">array</span>(<span class="string">&#x27;lagou&#x27;</span>, <span class="string">&#x27;com&#x27;</span>));</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">substr</span>(<span class="string">&#x27;www.lagou.com&#x27;</span>, <span class="number">5</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">substr</span>(<span class="string">&#x27;www.lagou.com&#x27;</span>, <span class="number">-5</span>);</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">substr</span>(<span class="string">&#x27;www.lagou.com&#x27;</span>, <span class="number">5</span>, <span class="number">5</span>);</span><br></pre></td></tr></table></figure>
+
+<p><strong>get_json_object 获取 JSON 字符串信息</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;store&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;fruit&quot;</span>:[</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="attr">&quot;weight&quot;</span>: <span class="number">8</span>,</span><br><span class="line">                <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;apple&quot;</span></span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="attr">&quot;weight&quot;</span>: <span class="number">9</span>,</span><br><span class="line">                <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;pear&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        <span class="attr">&quot;bicycle&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;price&quot;</span>: <span class="number">19.95</span>,</span><br><span class="line">            <span class="attr">&quot;color&quot;</span>: <span class="string">&quot;red&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;email&quot;</span>: <span class="string">&quot;amy@only_for_json_udf_test.net&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;owner&quot;</span>: <span class="string">&quot;amy&quot;</span></span><br><span class="line">&#125;</span><br><span class="line">-- 获取值</span><br><span class="line">SELECT get_json_object(src_json.json, &#x27;$.owner&#x27;) FROM src_json;</span><br><span class="line">amy</span><br><span class="line">-- 获取数组值</span><br><span class="line">SELECT get_json_object(src_json.json, &#x27;$.store.fruit\\[0]&#x27;) FROM src_json;</span><br><span class="line">&#123;<span class="attr">&quot;weight&quot;</span>:<span class="number">8</span>,<span class="attr">&quot;type&quot;</span>:<span class="string">&quot;apple&quot;</span>&#125;</span><br><span class="line">-- 获取不存在的值</span><br><span class="line">SELECT get_json_object(src_json.json, &#x27;$.non_exist_key&#x27;) FROM src_json;</span><br><span class="line">NULL</span><br></pre></td></tr></table></figure>
+
+<h3 id="数学函数"><a href="#数学函数" class="headerlink" title="数学函数"></a>数学函数</h3><ul>
+<li><code>round</code>: round x to d decimal places，可用于控制小数保留几位</li>
+<li><code>ceil</code>:  向上取整</li>
+<li><code>floor</code>:  向下取整。</li>
+<li><code>exp(DOUBLE a)</code>, <code>exp(DECIMAL a)</code>:  指数函数</li>
+<li>log10(DOUBLE a), log10(DECIMAL a)</li>
+<li>log(DOUBLE base, DOUBLE a)</li>
+<li>abs(DOUBLE a)</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">round</span>(<span class="number">314.15926</span>, <span class="number">2</span>);</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">round</span>(<span class="number">314.15926</span>, <span class="number">-2</span>);</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">ceil</span>(<span class="number">3.1415926</span>);</span><br><span class="line"><span class="keyword">select</span> <span class="keyword">floor</span>(<span class="number">3.1415926</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="集合函数"><a href="#集合函数" class="headerlink" title="集合函数"></a>集合函数</h3><ul>
+<li><code>size(Map&lt;K.V&gt;)</code> / <code>size(Array&lt;T&gt;)</code>： 返回元素个数</li>
+<li><code>map_keys(Map&lt;K.V&gt;)</code> / <code>map_values(Map&lt;K.V&gt;)</code>: 将 Map 所有的 key、value 进行返回</li>
+<li><code>array_contains(Array&lt;T&gt;, value):</code> 数组中是否包含某个值</li>
+<li><code>sort_array(Array&lt;T&gt;)</code>： 对数组元素进行排序</li>
+</ul>
+<h3 id="类型转换函数"><a href="#类型转换函数" class="headerlink" title="类型转换函数"></a>类型转换函数</h3><ul>
+<li>binary(string|binary)： 转换成二进制</li>
+<li>cast(expr as <type>)： 类型转换，无法转换时，返回 NULL</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="string">&#x27;23232&#x27;</span> <span class="keyword">AS</span> <span class="built_in">INT</span>);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>UDTF</p>
+</blockquote>
+<h3 id="聚集函数-UDAF"><a href="#聚集函数-UDAF" class="headerlink" title="聚集函数(UDAF)"></a>聚集函数(UDAF)</h3><ul>
+<li>count / sum / avg / min / max</li>
+<li>collect_set(col)</li>
+<li>collect_list(col)</li>
+<li>ntile(INTEGER x): 将有序分区划分为x个称为存储桶的组，并为该分区中的每一行分配存储桶编号。</li>
+</ul>
+<h3 id="表生成函数-UDTF"><a href="#表生成函数-UDTF" class="headerlink" title="表生成函数(UDTF)"></a>表生成函数(UDTF)</h3><blockquote>
+<p>一行输入，多行输出</p>
+</blockquote>
+<p>配合 lateral view 进行使用，解决 UDTF 不能添加额外列的问题。</p>
+<ul>
+<li>explode(ARRAY<T> a)</li>
+<li>explode(MAP&lt;Tkey,Tvalue&gt; m)</li>
+<li>posexplode (array)： 带有原始位置的炸裂函数</li>
+<li>json_tuple(string jsonStr,string k1,…,string kn)</li>
+<li>parse_url_tuple(string urlStr,string p1,…,string pn)</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- lateral view 常与 表生成函数explode结合使用，处理上述问题</span></span><br><span class="line"><span class="comment">-- ==&gt;  解决 UDTF 不能添加额外列的问题</span></span><br><span class="line"><span class="comment">-- lateral view udtf(expression) tableALias as  ...</span></span><br><span class="line"><span class="keyword">with</span> t1 <span class="keyword">as</span> (</span><br><span class="line">    <span class="keyword">select</span> <span class="string">&#x27;OK&#x27;</span> cola, <span class="keyword">split</span>(<span class="string">&#x27;www.lagou.com&#x27;</span>, <span class="string">&#x27;\\\\.&#x27;</span>) colb</span><br><span class="line">)</span><br><span class="line"><span class="keyword">select</span> cola, colc</span><br><span class="line"><span class="keyword">from</span> t1 <span class="keyword">lateral</span> <span class="keyword">view</span> <span class="keyword">explode</span>(colb) t2 <span class="keyword">as</span> colc;</span><br><span class="line">lateral view udtf(expression) tableALias as  ...</span><br><span class="line"><span class="comment">-- 炸裂 map 并给定别名</span></span><br><span class="line"><span class="keyword">select</span> <span class="keyword">explode</span>(<span class="keyword">map</span>(<span class="string">&#x27;A&#x27;</span>,<span class="number">10</span>,<span class="string">&#x27;B&#x27;</span>,<span class="number">20</span>,<span class="string">&#x27;C&#x27;</span>,<span class="number">30</span>)) <span class="keyword">as</span> (<span class="keyword">key</span>,<span class="keyword">value</span>);</span><br><span class="line">key value</span><br><span class="line">A	10</span><br><span class="line">B	20</span><br><span class="line">C	30</span><br><span class="line"><span class="keyword">select</span> posexplode(<span class="built_in">array</span>(<span class="string">&#x27;A&#x27;</span>,<span class="string">&#x27;B&#x27;</span>,<span class="string">&#x27;C&#x27;</span>)) <span class="keyword">as</span> (pos,val);</span><br><span class="line">pos val</span><br><span class="line">2	C</span><br><span class="line">1	B</span><br><span class="line">0	A</span><br></pre></td></tr></table></figure>
+
+<p><strong>json_tuple 获取 JSON 多个值拆开</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a.timestamp, b.*</span><br><span class="line"><span class="keyword">from</span> <span class="keyword">log</span> a <span class="keyword">lateral</span> <span class="keyword">view</span> json_tuple(a.appevent, <span class="string">&#x27;eventid&#x27;</span>, <span class="string">&#x27;eventname&#x27;</span>) b <span class="keyword">as</span> f1, f2;</span><br></pre></td></tr></table></figure>
+
+<p><strong>parse_url_tuple 获取 URL 中的多个信息</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> b.*</span><br><span class="line"><span class="keyword">FROM</span> src <span class="keyword">LATERAL</span> <span class="keyword">VIEW</span> parse_url_tuple(fullurl, <span class="string">&#x27;HOST&#x27;</span>, <span class="string">&#x27;PATH&#x27;</span>, <span class="string">&#x27;QUERY&#x27;</span>, <span class="string">&#x27;QUERY:id&#x27;</span>) b <span class="keyword">as</span> host, <span class="keyword">path</span>, <span class="keyword">query</span>, query_id <span class="keyword">LIMIT</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>脱敏函数： 对姓名、电话号码进行脱敏，不显示全部内容</p>
+<ul>
+<li>mask(string str[, string upper[, string lower[, string number]]]):<ul>
+<li>如 mask(“abcd-EFGH-8765-4321”, “U”, “l”, “#”) results in llll-UUUU-####-####.</li>
+</ul>
+</li>
+<li>collect_list： 列出该字段的所有值，不去重</li>
+<li>current_user()： 当前用户</li>
+<li>md5(string/binary)</li>
+<li>version()†</li>
+</ul>
+<h2 id="窗口与分析函数"><a href="#窗口与分析函数" class="headerlink" title="窗口与分析函数"></a>窗口与分析函数</h2><blockquote>
+<p>和聚合函数的不同之处是：对于每个组返回多行，而聚合函数对于每个组只返回一行。数据窗口大小可能会随着行的变化而变化。</p>
+</blockquote>
+<p><strong>窗口函数</strong></p>
+<ul>
+<li>使用窗口函数之前一般要要通过 over() 进行开窗</li>
+<li>窗口函数是针对每一行数据的，如果 over 中没有参数，默认是全部的结果集</li>
+</ul>
+<p><strong>partition by 子句</strong></p>
+<ul>
+<li>在 over 窗口中进行分区，对某一列进行分区统计，窗口的大小就是分区的大小</li>
+</ul>
+<p><strong>order by 子句</strong></p>
+<ul>
+<li>对输入的数据进行排序，有 order by 缺少 window 子句，默认窗口为 range between unbounded preceding and current row</li>
+</ul>
+<p><strong>over 子句</strong></p>
+<ul>
+<li>后面可指定标准的聚集函数， count, sum, min, max, avg</li>
+<li>使用 PARTITION BY 语句，具有任何原始数据类型的一个或多个分区列。</li>
+<li>带有 PARTITION BY 和 ORDER BY 以及任何数据类型的一个或多个分区和/或排序列，<ul>
+<li>带有窗口规格，Windows 可以在 WINDOW 子句中单独定义。</li>
+</ul>
+</li>
+</ul>
+<p><strong>Window 子句</strong></p>
+<ul>
+<li>窗口规范支持以下格式：</li>
+<li>指定 order by 并缺少 window 子句时，window 默认被指定为 RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</li>
+<li>当同时缺少 order by 和 window 子句时，默认窗口指定为 ROW BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING</li>
+<li>不支持 Rank 函数， rank、ntile、denseRank、cusmeDis、percentRank，不支持 Lead 和 Lag 函数</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(ROWS | RANGE) BETWEEN (UNBOUNDED | [num]) PRECEDING AND ([num] PRECEDING | CURRENT ROW | (UNBOUNDED | [num]) FOLLOWING)</span><br><span class="line">(ROWS | RANGE) BETWEEN CURRENT ROW AND (CURRENT ROW | (UNBOUNDED | [num]) FOLLOWING)</span><br><span class="line">(ROWS | RANGE) BETWEEN [num] FOLLOWING AND (UNBOUNDED | [num]) FOLLOWING</span><br></pre></td></tr></table></figure>
+
+<h3 id="窗口范围"><a href="#窗口范围" class="headerlink" title="窗口范围"></a>窗口范围</h3><ul>
+<li>unbounded preceding: 组内第一行数据</li>
+<li>n preceding: 组内当前行的前n行数据</li>
+<li>current row: 当前行数据</li>
+<li>n following: 组内当前行的后 n 行数据</li>
+<li>unbounded following: 组内最后一行数据</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询员工姓名、薪水、部门薪水总和、占部门薪水的百分比</span></span><br><span class="line"><span class="keyword">select</span> ename,</span><br><span class="line">       sal,</span><br><span class="line">       deptno,</span><br><span class="line">       <span class="keyword">sum</span>(sal) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> deptno) depsalsum,</span><br><span class="line">       <span class="keyword">round</span>(sal / <span class="keyword">sum</span>(sal) <span class="keyword">over</span>(<span class="keyword">partition</span> <span class="keyword">by</span> deptno) * <span class="number">100</span>, <span class="number">2</span>) || <span class="string">&#x27;%&#x27;</span> salofdeptsumpercent</span><br><span class="line"><span class="keyword">from</span> emp;</span><br><span class="line"><span class="keyword">select</span> ename,</span><br><span class="line">       sal,</span><br><span class="line">       deptno,</span><br><span class="line">       <span class="keyword">sum</span>(sal) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> deptno <span class="keyword">order</span> <span class="keyword">by</span> ename)</span><br><span class="line"><span class="keyword">from</span> emp;</span><br><span class="line"><span class="comment">-- 等价。组内，第一行 ~ 当前行的和</span></span><br><span class="line"><span class="keyword">select</span> ename,</span><br><span class="line">       sal,</span><br><span class="line">       deptno,</span><br><span class="line">       <span class="keyword">sum</span>(sal) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> deptno <span class="keyword">order</span> <span class="keyword">by</span> ename <span class="keyword">rows</span> <span class="keyword">between</span> <span class="keyword">unbounded</span> <span class="keyword">preceding</span> <span class="keyword">and</span> <span class="keyword">current</span> <span class="keyword">row</span> )</span><br><span class="line"><span class="keyword">from</span> emp;</span><br><span class="line"><span class="comment">-- 组内，第一行 ~ 最后一行的和</span></span><br><span class="line"><span class="keyword">select</span> ename,</span><br><span class="line">       sal,</span><br><span class="line">       deptno,</span><br><span class="line">       <span class="keyword">sum</span>(sal) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> deptno <span class="keyword">order</span> <span class="keyword">by</span> ename <span class="keyword">rows</span> <span class="keyword">between</span> <span class="keyword">unbounded</span> <span class="keyword">preceding</span> <span class="keyword">and</span> <span class="keyword">unbounded</span> <span class="keyword">following</span> )</span><br><span class="line"><span class="keyword">from</span> emp;</span><br><span class="line"><span class="comment">-- 组内，按照分区前后两行和当前行的总和，前一行 + 当前行 + 后一行</span></span><br><span class="line"><span class="keyword">select</span> ename,</span><br><span class="line">       sal,</span><br><span class="line">       deptno,</span><br><span class="line">       <span class="keyword">sum</span>(sal) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> deptno <span class="keyword">order</span> <span class="keyword">by</span> ename <span class="keyword">rows</span> <span class="keyword">between</span> <span class="number">1</span> <span class="keyword">preceding</span> <span class="keyword">and</span> <span class="number">1</span> <span class="keyword">following</span> )</span><br><span class="line"><span class="keyword">from</span> emp;</span><br></pre></td></tr></table></figure>
+
+<h3 id="排名函数"><a href="#排名函数" class="headerlink" title="排名函数"></a>排名函数</h3><ul>
+<li>row_number(): 排名顺序增加不会重复</li>
+<li>RANK(): 排名相等会在名次中留下空位；如1、2、2、4、5、… …</li>
+<li>DENSE_RANK(): 排名相等会在名次中不会留下空位 ；如1、2、2、3、4、… …</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> t2</span><br><span class="line">(</span><br><span class="line">    cname <span class="keyword">string</span> <span class="keyword">comment</span> <span class="string">&#x27;课程名&#x27;</span>,</span><br><span class="line">    sname <span class="keyword">string</span> <span class="keyword">COMMENT</span> <span class="string">&#x27;学生名&#x27;</span>,</span><br><span class="line">    score <span class="built_in">int</span> <span class="keyword">COMMENT</span> <span class="string">&#x27;课程分数&#x27;</span></span><br><span class="line">) <span class="keyword">ROW</span> <span class="keyword">FORMAT</span> <span class="keyword">DELIMITED</span> <span class="keyword">FIELDS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">&#x27; &#x27;</span>;</span><br><span class="line"><span class="comment">-- 求每个班级前3名的学员 </span></span><br><span class="line"><span class="keyword">with</span> tmp <span class="keyword">as</span> (</span><br><span class="line">    <span class="keyword">SELECT</span> cname, </span><br><span class="line">           sname, </span><br><span class="line">           score, </span><br><span class="line">           <span class="keyword">dense_rank</span>() <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> cname <span class="keyword">order</span> <span class="keyword">by</span> score) <span class="keyword">rank</span></span><br><span class="line">    <span class="keyword">FROM</span> t2</span><br><span class="line">)</span><br><span class="line"><span class="keyword">select</span> cname, sname, score, <span class="keyword">rank</span></span><br><span class="line"><span class="keyword">from</span> tmp</span><br><span class="line"><span class="keyword">where</span> <span class="keyword">rank</span> &lt;= <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="序列函数"><a href="#序列函数" class="headerlink" title="序列函数"></a>序列函数</h3><ul>
+<li>lag: 返回当前数据行的上一行数据 常用</li>
+<li>lead: 返回当前数据行的下一行数据 常用</li>
+<li>first_value: 取分组内排序后，截止到当前行，第一个值</li>
+<li>last_value: 分组内排序后，截止到当前行，最后一个值</li>
+<li>ntile: 将分组的数据按照顺序切分成n片，返回当前切片值</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> userpv</span><br><span class="line">(</span><br><span class="line">    cid   <span class="keyword">string</span> <span class="keyword">comment</span> <span class="string">&#x27;&#x27;</span>,</span><br><span class="line">    ctime <span class="built_in">date</span> <span class="keyword">comment</span> <span class="string">&#x27;时间&#x27;</span>,</span><br><span class="line">    pv    <span class="built_in">int</span> <span class="keyword">COMMENT</span> <span class="string">&#x27;页面访问次数&#x27;</span></span><br><span class="line">) <span class="keyword">row</span> <span class="keyword">format</span> <span class="keyword">delimited</span> <span class="keyword">fields</span> <span class="keyword">terminated</span> <span class="keyword">by</span> <span class="string">&#x27;,&#x27;</span>;</span><br><span class="line"><span class="comment">-- 上两行数据， 下三行数据</span></span><br><span class="line"><span class="keyword">select</span> cid,</span><br><span class="line">       ctime,</span><br><span class="line">       pv,</span><br><span class="line">       lag(pv, <span class="number">2</span>) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> cid <span class="keyword">order</span> <span class="keyword">by</span> ctime)  lagpv,</span><br><span class="line">       <span class="keyword">lead</span>(pv, <span class="number">3</span>) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> cid <span class="keyword">order</span> <span class="keyword">by</span> ctime) leadpv</span><br><span class="line"><span class="keyword">from</span> userpv;</span><br><span class="line"><span class="comment">-- first_value 分组排序截止到当前行第一个值 / last_value 分组排序后截止到当前行最后一个值</span></span><br><span class="line"><span class="keyword">select</span> cid,</span><br><span class="line">       ctime,</span><br><span class="line">       pv,</span><br><span class="line">       <span class="keyword">first_value</span>(pv) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> cid <span class="keyword">order</span> <span class="keyword">by</span> ctime</span><br><span class="line">           <span class="keyword">rows</span> <span class="keyword">between</span> <span class="keyword">unbounded</span> <span class="keyword">preceding</span> <span class="keyword">and</span> <span class="keyword">unbounded</span> <span class="keyword">following</span>) firstpv,</span><br><span class="line">       <span class="keyword">last_value</span>(pv) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> cid <span class="keyword">order</span> <span class="keyword">by</span> ctime</span><br><span class="line">           <span class="keyword">rows</span> <span class="keyword">between</span> <span class="keyword">unbounded</span> <span class="keyword">preceding</span> <span class="keyword">and</span> <span class="keyword">unbounded</span> <span class="keyword">following</span>) lastpv</span><br><span class="line"><span class="keyword">from</span> userpv;</span><br><span class="line"><span class="comment">-- ntile 按照cid进行分组并按照 ctime 排序，将分组内的数据平均分成 2 份</span></span><br><span class="line"><span class="keyword">select</span> cid,</span><br><span class="line">       ctime,</span><br><span class="line">       pv,</span><br><span class="line">       ntile(<span class="number">2</span>) <span class="keyword">over</span> (<span class="keyword">partition</span> <span class="keyword">by</span> cid <span class="keyword">order</span> <span class="keyword">by</span> ctime) ntile</span><br><span class="line"><span class="keyword">from</span> userpv;</span><br></pre></td></tr></table></figure>
+
+<h2 id="UDF"><a href="#UDF" class="headerlink" title="UDF"></a>UDF</h2><p><strong>临时性添加函数</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- hive add jar</span></span><br><span class="line">add jar /home/hadoop/udf.jar</span><br><span class="line"><span class="keyword">create</span> <span class="keyword">temporary</span> <span class="keyword">function</span> myconcat <span class="keyword">as</span> <span class="string">&#x27;con.janhen.hive.udaf.ConcatUDAF&#x27;</span>;</span><br><span class="line"><span class="keyword">SHOW</span> FUNCTIONS;</span><br></pre></td></tr></table></figure>
+
+<p><strong>永久添加到 Hive 中</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># jar ==&gt; hdfs </span></span><br><span class="line">hdfs dfs -put hiveudf.jar /user/hadoop/jar/</span><br><span class="line">-- 加载函数</span><br><span class="line">create <span class="keyword">function</span> mynvl2 as <span class="string">&#x27;com.janhen.bigdata.hive.nvl&#x27;</span></span><br><span class="line">    using jar <span class="string">&#x27;hdfs:/user/hadoop/jar/hiveudf.jar&#x27;</span>;</span><br><span class="line">show <span class="built_in">functions</span>;</span><br><span class="line">drop <span class="keyword">function</span> mynvl2;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-Built-inFunctions">Built-in Functions</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+WindowingAndAnalytics">Windowing and Analytics Functions</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/09/Hive-%E5%87%BD%E6%95%B0/" data-id="ckm733rt50007ivvx7ej0hrhx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Hive-优化
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/03/09/Hive-HQL/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hive-HQL</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%90%8E%E7%AB%AF/">后端</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">算法与数据结构</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hadoop/" rel="tag">Hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scala/" rel="tag">Scala</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Hadoop/" style="font-size: 17.5px;">Hadoop</a> <a href="/tags/Hive/" style="font-size: 20px;">Hive</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/Kafka/" style="font-size: 10px;">Kafka</a> <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 12.5px;">Linux</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/Scala/" style="font-size: 12.5px;">Scala</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 15px;">工具</a> <a href="/tags/%E5%B9%B6%E5%8F%91/" style="font-size: 10px;">并发</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/03/09/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/">Hive-基础</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/">Hive-优化</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/">Hive-函数</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-HQL/">Hive-HQL</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

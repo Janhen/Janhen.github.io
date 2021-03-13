@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Hive-基础 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Hive [TOC] 基础说明 将 SQL 转换成 MapReduce 任务的工具。 基于 Hadoop 的数据仓库工具，存储和处理海量结构化的数据，可将结构化的数据映射成一张表  FaceBook 开发的海量数据查询工具，基本实现了 SQL-92 标准。 可以与 Druid, Kudu 进行集成 与 HBase 集成 说明 处理 HDFS 中的海量数据 通过 SQL 完成计算 基于Hadoop的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hive-基础">
+<meta property="og:url" content="http://example.com/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Hive [TOC] 基础说明 将 SQL 转换成 MapReduce 任务的工具。 基于 Hadoop 的数据仓库工具，存储和处理海量结构化的数据，可将结构化的数据映射成一张表  FaceBook 开发的海量数据查询工具，基本实现了 SQL-92 标准。 可以与 Druid, Kudu 进行集成 与 HBase 集成 说明 处理 HDFS 中的海量数据 通过 SQL 完成计算 基于Hadoop的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://img.janhen.com/20210309213549Hive.png">
+<meta property="og:image" content="http://img.janhen.com/20210302225729OHxiB9.png">
+<meta property="og:image" content="http://img.janhen.com/2021022510200471tjjj.jpg">
+<meta property="article:published_time" content="2021-03-09T14:57:00.000Z">
+<meta property="article:modified_time" content="2021-03-09T15:21:55.923Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Hive">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.janhen.com/20210309213549Hive.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Hive-基础" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/" class="article-date">
+  <time datetime="2021-03-09T14:57:00.000Z" itemprop="datePublished">2021-03-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Hive-基础
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Hive"><a href="#Hive" class="headerlink" title="Hive"></a>Hive</h1><p><img src="http://img.janhen.com/20210309213549Hive.png" alt="http://img.janhen.com/20210309213549Hive.png"></p>
+<p>[TOC]</p>
+<h2 id="基础说明"><a href="#基础说明" class="headerlink" title="基础说明"></a>基础说明</h2><blockquote>
+<p><strong>将 SQL 转换成 MapReduce 任务的工具。</strong> 基于 Hadoop 的数据仓库工具，存储和处理海量结构化的数据，可将结构化的数据映射成一张表</p>
+</blockquote>
+<p>FaceBook 开发的海量数据查询工具，基本实现了 <code>SQL-92</code> 标准。</p>
+<p>可以与 Druid, Kudu 进行集成 与 HBase 集成</p>
+<p><strong>说明</strong></p>
+<p>处理 HDFS 中的海量数据</p>
+<p>通过 SQL 完成计算</p>
+<p>基于Hadoop的数据仓库工具，可以将结构化的数据文件映射为一张表，并提供类SQL查询功能.</p>
+<p>最适合数据仓库程序</p>
+<p>缺点：</p>
+<p>HQL 表达能力有限： 无法表示迭代计算，数据挖掘方面不擅长</p>
+<p>效率低： 自动生成的 MR 效率，调优较困难</p>
+<p>Pig: Hive 的替代品，apache 顶级项目 一种数据流语言，不是查询语言 常用语 ETL 中的一部分</p>
+<p>HBase: 已经可以结合 Hive 使用</p>
+<p>Thrift: 提供了可远程访问其他进程的功能，提供了使用 JDBC, ODBC 访问 Hive 的功能</p>
+<p>HWI: 简单的网页界面</p>
+<p>HQL：</p>
+<p>Hive:</p>
+<ul>
+<li>解释器: AST 抽象语法树</li>
+<li>编译器</li>
+<li>优化器</li>
+<li>执行期</li>
+<li>MetaStore</li>
+</ul>
+<p>Hive 的元数据默认存储在自带的 derby 数据库中 derby: java 开发、但进程、单用户</p>
+<h3 id="架构原理"><a href="#架构原理" class="headerlink" title="架构原理"></a>架构原理</h3><p>// TODO</p>
+<p>Client： Hive、Beeline、Hue</p>
+<p>元数据库： 存放元数据的地方，数据库、表、分区、列的名称和属性，数据所在位置等信息</p>
+<p>Meta store 元数据服务： 提供统一的服务接口，Client 通过 metastore 访问元数据。三种模式，内嵌、本地、远程模式。</p>
+<p>。。。</p>
+<p>Hive Driver： 解释器、编译器、优化器、执行器</p>
+<p>HSQL 转化为 MapReduce 的过程</p>
+<p>HiveSQL</p>
+<ul>
+<li>-&gt; AST 抽象语法树</li>
+<li>-&gt; QB 查询块</li>
+<li>-&gt; OperatorTree 操作树</li>
+<li>-&gt; 优化后的 OperatorTree</li>
+<li>-&gt; MapReduce 树</li>
+<li>-&gt; 优化后的 MapReduce 任务树</li>
+</ul>
+<p>Q: Hive 关联表对应 MapReduce 如何实现？</p>
+<h3 id="Hive-的优缺点"><a href="#Hive-的优缺点" class="headerlink" title="Hive 的优缺点"></a>Hive 的优缺点</h3><p><strong>Hive 的优点</strong></p>
+<ul>
+<li>学习成本低。Hive提供了类似SQL的查询语言，开发人员能快速上手；</li>
+<li>处理海量数据。底层执行的是MapReduce 任务；</li>
+<li>系统可以水平扩展。底层基于Hadoop； 功能可以扩展。</li>
+<li>Hive允许用户自定义函数；</li>
+<li>良好的容错性。某个节点发生故障，HQL仍然可以正常完成；</li>
+<li>统一的元数据管理。元数据包括：有哪些表、表有什么字段、字段是什么类型</li>
+</ul>
+<p><strong>Hive 的缺点</strong></p>
+<ul>
+<li>HQL表达能力有限；</li>
+<li>迭代计算无法表达；</li>
+<li>Hive的执行效率不高(基于MR的执行引擎)；</li>
+<li>Hive自动生成的MapReduce作业，某些情况下不够智能；</li>
+<li>Hive的调优困难；</li>
+</ul>
+<h3 id="Hive-架构"><a href="#Hive-架构" class="headerlink" title="Hive 架构"></a>Hive 架构</h3><p><img src="http://img.janhen.com/20210302225729OHxiB9.png" alt="http://img.janhen.com/20210302225729OHxiB9.png"></p>
+<ul>
+<li>CLI: Hive  命令行</li>
+<li>Thrift Server: Hive 可选组件，一个软件框架服务，可通过编程方式访问 Hive</li>
+<li>MetaStore:  元数据存储在 RDBMS 中，元数据包括数据库名、表名和类型、字段名和数据类型、数据所在的位置等</li>
+<li>Driver： 驱动程序<ul>
+<li>解析器： 第三方工具(antlr) 将 HQL 字符串转换成 AST，对 AST 进行语法分析，如字段是否存在、SQL 语义正确性、表的存在</li>
+<li>编译器： 将 AST 编译成逻辑执行计划</li>
+<li>优化器： 对逻辑执行计划进行优化，减少不必要的列、使用分区、进行谓词下推等</li>
+<li>执行器： 将逻辑执行计划转换成可以运行的物理计划</li>
+</ul>
+</li>
+</ul>
+<h2 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h2><h3 id="数据类型与转换"><a href="#数据类型与转换" class="headerlink" title="数据类型与转换"></a>数据类型与转换</h3><p><strong>基本数据类型</strong></p>
+<ul>
+<li>整数类型： Integer 、TINYINT、SMALINT、INT、BIGINT</li>
+<li>浮点数类型： FLOAT、DOUBLE、DECIMAL(17byte)</li>
+<li>字符类型： STRING(任意长度)、VARCHAR(1-65535)</li>
+<li>日期类型：</li>
+</ul>
+<p><strong>类型转换</strong></p>
+<ul>
+<li>String 可隐式转换</li>
+<li>整形科转换为更广的类型，TINYINT → INT, INT → BIGINT</li>
+<li>整数类型、FLOAT、STRING 类型可隐式转换成 DOUBLE</li>
+<li>cast 进行强制类型转换，失败返回空</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">CAST</span>(<span class="string">&#x27;11111&#x27;</span> <span class="keyword">AS</span> <span class="built_in">INT</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="集合类型"><a href="#集合类型" class="headerlink" title="集合类型"></a>集合类型</h3><p><strong>四种集合类型</strong></p>
+<ul>
+<li>array: 有序的相同类型集合</li>
+<li>map: key 为基本类型</li>
+<li>struct: 不同类型字段的集合</li>
+<li>union: 不同类型元素存储在统一字段的不同行中</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> NAMED_STRUCT(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;usernamexx&quot;</span>, <span class="string">&quot;id&quot;</span>, <span class="number">7</span>, <span class="string">&quot;salary&quot;</span>, <span class="string">&quot;111111.23&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p><strong>使用案例</strong></p>
+<p>原始的 JSON 数据</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;songsong&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;friends&quot;</span>: [<span class="string">&quot;bingbing&quot;</span> , <span class="string">&quot;lili&quot;</span>] ,       <span class="comment">//列表Array,</span></span><br><span class="line">    <span class="attr">&quot;children&quot;</span>: &#123;                      <span class="comment">//键值Map,</span></span><br><span class="line">        <span class="attr">&quot;xiao song&quot;</span>: <span class="number">18</span> ,</span><br><span class="line">        <span class="attr">&quot;xiaoxiao song&quot;</span>: <span class="number">19</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="string">&quot;address&quot;</span>: &#123;                      <span class="comment">//结构Struct,</span></span><br><span class="line">        <span class="attr">&quot;street&quot;</span>: <span class="string">&quot;hui long guan&quot;</span> ,</span><br><span class="line">        <span class="attr">&quot;city&quot;</span>: <span class="string">&quot;beijing&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>格式好的行数据</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">songsong,bingbing_lili,xiao song:18_xiaoxiao song:19,hui long guan_beijing</span><br><span class="line">yangyang,caicai_susu,xiao yang:18_xiaoxiao yang:19,chao yang_beijing</span><br><span class="line">-- 表创建</span><br><span class="line">create table <span class="built_in">test</span>(</span><br><span class="line">  name string,</span><br><span class="line">  friends array&lt;string&gt;,</span><br><span class="line">  children map&lt;string, int&gt;,</span><br><span class="line">  address struct&lt;street:string, city:string&gt;</span><br><span class="line">)</span><br><span class="line">row format delimited fields terminated by <span class="string">&#x27;,&#x27;</span></span><br><span class="line">collection items terminated by <span class="string">&#x27;_&#x27;</span></span><br><span class="line">map keys terminated by <span class="string">&#x27;:&#x27;</span></span><br><span class="line">lines terminated by <span class="string">&#x27;\\\\n&#x27;</span>;</span><br><span class="line">-- 测试结构查询</span><br><span class="line">SELECT friends[1], children[<span class="string">&#x27;xiao song&#x27;</span>], address.city </span><br><span class="line">FROM <span class="built_in">test</span> WHERE name = <span class="string">&#x27;songsong&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="表类型"><a href="#表类型" class="headerlink" title="表类型"></a>表类型</h3><ul>
+<li>外部表： 指定 external 关键字，元数据 + 数据分开管理，删除表定义，数据不会删除</li>
+<li>内部表： 删除表的时候数据会删除</li>
+<li>分桶表： 实现 DML 事务时必须</li>
+<li>分区表：</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">EXTERNAL</span> <span class="keyword">TABLE</span> emp_bucket (</span><br><span class="line">  empno <span class="built_in">INT</span>,</span><br><span class="line">  ename <span class="keyword">STRING</span>,</span><br><span class="line">  job <span class="keyword">STRING</span>,</span><br><span class="line">  mgr <span class="built_in">INT</span>,</span><br><span class="line">  hiredate <span class="built_in">TIMESTAMP</span>,</span><br><span class="line">  sal <span class="built_in">DECIMAL</span>(<span class="number">7</span>,<span class="number">2</span>),</span><br><span class="line">  comm DECIM</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>Q: 为何分区？</p>
+<p>可避免全表扫描，提高查询效率，通常根据事件、地区等信息进行分区</p>
+<p>Q: 为何分桶？</p>
+<p>分区或表数据量过大，分桶降数据划分成更细粒度。</p>
+<p>通过 分桶字段.hashCode % 分桶个数。</p>
+<p>不能使用 load data local inpath 方式加载数据</p>
+<p>在数据仓库中</p>
+<p>ODS 外部表，从外部进来</p>
+<p>DW 内部表</p>
+<p>ADS 内部表</p>
+<p>计算过程中使用到的临时表，数据随用随删，使用内部表。</p>
+<h3 id="文本文件编码"><a href="#文本文件编码" class="headerlink" title="文本文件编码"></a>文本文件编码</h3><p>支持自定义文件存储格式</p>
+<p>默认的文件分割</p>
+<ul>
+<li>行与行 <code>\\n</code></li>
+<li>字段之间 <code>^A</code></li>
+<li>元素之间 <code>^B</code></li>
+<li>k-v 之间： <code>^C</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 显示 ^A/^B 特殊的控制字符</span></span><br><span class="line">cat -A emp</span><br></pre></td></tr></table></figure>
+
+<h3 id="读时模式"><a href="#读时模式" class="headerlink" title="读时模式"></a>读时模式</h3><p>写时模式 -&gt; 写数据检查 -&gt; RDBMS 读时模式 -&gt; 读时检查 -&gt; Hive</p>
+<p>写时模式： 在加载时发现数据不符合表的定义，则拒绝加载数据。数据在写入 数据库时对照表模式进行检。</p>
+<p>读时模式： 加载数据时不进行数据格 式的校验，读取数据时如果不合法则显示NULL。</p>
+<h2 id="元数据管理"><a href="#元数据管理" class="headerlink" title="元数据管理"></a>元数据管理</h2><p><img src="http://img.janhen.com/2021022510200471tjjj.jpg" alt="http://img.janhen.com/2021022510200471tjjj.jpg"></p>
+<p>通常是独立的 RDBMS</p>
+<p>元数据信息包括： 存在的表、表的列、权限 …</p>
+<h2 id="Thrift-服务"><a href="#Thrift-服务" class="headerlink" title="Thrift 服务"></a>Thrift 服务</h2><p>开启 hiveserver2，搭配 groovy / maven 使用 默认情况下，管理表在 <code>/usr/hive/warehouse</code> 目录下</p>
+<p>hive.start.cleanup.scratchdir  默认为 false 每次重启 Hiveserver 时清理掉历史目录</p>
+<h3 id="HiveServer2"><a href="#HiveServer2" class="headerlink" title="HiveServer2"></a>HiveServer2</h3><blockquote>
+<p>管理元数据，生产环境中常使用。</p>
+</blockquote>
+<h3 id="beeline"><a href="#beeline" class="headerlink" title="beeline"></a>beeline</h3><p>beeline 可以连接 Hive， MySQL…</p>
+<h3 id="HCatalog"><a href="#HCatalog" class="headerlink" title="HCatalog"></a>HCatalog</h3><p>Hive 的元数据服务 统一的元数据服务</p>
+<p>可不启动 MR 任务执行 主要是 DDL 对元数据的操作</p>
+<p>hcat -e “create database tt2”;</p>
+<p>hcat -f xxx.hql</p>
+<h2 id="数据存储格式"><a href="#数据存储格式" class="headerlink" title="数据存储格式"></a>数据存储格式</h2><p>TEXTFILE（默认格式） 、 SEQUENCEFILE、 RCFILE、 ORCFILE、 PARQUET。</p>
+<p>TEXTFILE、SEQUENCEFILE 的存储格式是基于行存储的； ORC和PARQUET 是基于列式存储的。</p>
+<p>TEXTFILE</p>
+<p>通常先导入到 textfile，之后执行 insert … select 到其他格式的表中</p>
+<p><strong>行和列的存储</strong> 行存储： insert 与 update 比较容易 select 需要查询大多无用的数据</p>
+<p>textfile,sequencefile 行 rcrile, orc, parout   列存储</p>
+<p>sequencefile: 可分割 可压缩 record, none, block 压缩  …</p>
+<p>RCFile: 列式记录文件，结合列和行存储的优势</p>
+<p><font color="green">先按水平划分，后让垂直划分</font></p>
+<p>使用列唯独的压缩，有效提升存储空间利用率</p>
+<h3 id="textfile"><a href="#textfile" class="headerlink" title="textfile"></a>textfile</h3><p>默认格式，数据不压缩</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> student (</span><br><span class="line"><span class="keyword">name</span> <span class="keyword">STRING</span>,</span><br><span class="line">age <span class="built_in">INT</span>,</span><br><span class="line">cource <span class="built_in">ARRAY</span>&lt;<span class="keyword">STRING</span>&gt;,</span><br><span class="line"><span class="keyword">body</span> <span class="keyword">MAP</span>&lt;<span class="keyword">STRING</span>, <span class="built_in">FLOAT</span>&gt;,</span><br><span class="line">address <span class="keyword">STRUCT</span>&lt;STREET:<span class="keyword">STRING</span>, CITY:<span class="keyword">STRING</span>, STATE:<span class="keyword">STRING</span>&gt;</span><br><span class="line">)</span><br><span class="line"><span class="keyword">ROW</span> <span class="keyword">FORMAT</span> <span class="keyword">DELIMITED</span></span><br><span class="line"><span class="keyword">FIELDS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">&#x27;\\001&#x27;</span></span><br><span class="line">COLLECTION ITEMS <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">&#x27;002&#x27;</span></span><br><span class="line"><span class="keyword">MAP</span> <span class="keyword">KEYS</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">&#x27;\\003&#x27;</span></span><br><span class="line"><span class="keyword">LINES</span> <span class="keyword">TERMINATED</span> <span class="keyword">BY</span> <span class="string">&#x27;\\n&#x27;</span></span><br><span class="line"><span class="keyword">STORED</span> <span class="keyword">AS</span> TEXTFILE;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ORCFile"><a href="#ORCFile" class="headerlink" title="ORCFile"></a>ORCFile</h3><blockquote>
+<p>表位 ORC 可支持事务操作</p>
+</blockquote>
+<p>组成 文件脚注(file footer)： postscript： stripe: 条带  ，默认 250M</p>
+<ul>
+<li>Index Data: 1W行一个, 条带统计信息, 数据在条带中的位置</li>
+<li>Row data: 水平 –&gt; 垂直, 列为单位存储数据</li>
+<li>Stripe Footer: stripe 元数据信息</li>
+</ul>
+<p>三个级别的索引：</p>
+<p>文件级别、条带级、行组级</p>
+<p>无需指定分割符，自动处理</p>
+<h3 id="Parquet"><a href="#Parquet" class="headerlink" title="Parquet"></a>Parquet</h3><blockquote>
+<p>apache 顶级项目site</p>
+</blockquote>
+<p>由 Twitter 和 Cloudera 合作开发</p>
+<p>支持使用重复级别/定义级别的方法来对数据结构进行编码</p>
+<p>通用型强</p>
+<p><strong>与语言和平台无关</strong></p>
+<p>二进制存储的</p>
+<p>文件中包含数据和元数据</p>
+<p>Row group:  文件有多个行组组成，写入数据最大的缓存单元，50M ~ 1GB 之间</p>
+<p>Column Chunk: 存储当前行组内的某一行数据 最小的 I/O 并发单元</p>
+<p>Page: 压缩读取数据的最小单元 8K ~ 1M 之间，越大压缩率越高</p>
+<p>Footer: 数据的 schema 信息 每个行组的元数据信息： 每个 column chunk 的元数据信息：</p>
+<h3 id="比较"><a href="#比较" class="headerlink" title="比较"></a>比较</h3><p>压缩比 ORC &gt; Parquet &gt; text</p>
+<p>执行查询 ORC 与 Parquet  相当</p>
+<ul>
+<li>TextFile文件更多的是作为跳板来使用(即方便将数据转为其他格式)</li>
+<li>有update、delete和事务性操作的需求，通常选择ORCFile</li>
+<li>没有事务性要求，希望支持 Impala、Spark，多种计算框架/查询引擎，建议选择 Parquet</li>
+</ul>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="Hive-与-RDBMS-的对比"><a href="#Hive-与-RDBMS-的对比" class="headerlink" title="Hive 与 RDBMS 的对比"></a>Hive 与 RDBMS 的对比</h3><p>Hive 是基于 Hadoop 的数据仓库分析工具，  可以将 SQL 转换成 MR 任务运行。</p>
+<ul>
+<li>查询语言类似， HQL, 与 SQL 高度类似，实现了 SQL-92 的标准。</li>
+<li>数据规模，Hive 处理海量数据，RDBMS 只能处理有限的数据集</li>
+<li>执行引擎，Hive 的执行引擎可以是 MR / Tex / Spark / Flink, RDBMS使用自己的执行引擎</li>
+<li>数据存储，Hive 的数据一般存储在 HDFS 上，RDBMS 通常存储在贝蒂文件系统或者裸设备</li>
+<li>执行速度，Hive 执行速度相对比较慢(MR/数据量)，RDBMS 相对快，Hive 没有索引，默认使用 MapReduce 作为执行引擎，会产生较高的延迟。RDBMS 一般会定义索引，执行延迟较低。</li>
+<li>可扩展性，Hive 方便进行水平扩展，通常 RDBMS 对水平扩展支持不友好。Hive 建立在 Hadoop 上，可扩展性与 Hadoop 的可扩展性是一致的，RDBMS 优于 ACID 语义的严格限制，扩展行有限。</li>
+<li>数据更新，Hive 对数据更新不友好，RDBMS 支持频繁快速的数据更新</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://www.notion.so/2704bd84d3a140e09582d547cff004d6">Hive 与 RDBMS 对比</a></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Hive</th>
+<th>RMDBMS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>查询语言</td>
+<td>HQL</td>
+<td>SQL</td>
+</tr>
+<tr>
+<td>数据存储位置</td>
+<td>HDFS</td>
+<td>Raw Device / 本地文件系统</td>
+</tr>
+<tr>
+<td>数据格式</td>
+<td>用户定义</td>
+<td>系统决定</td>
+</tr>
+<tr>
+<td>数据更新</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>索引</td>
+<td>无</td>
+<td>有</td>
+</tr>
+<tr>
+<td>执行引擎</td>
+<td>MapReduce</td>
+<td>Executor</td>
+</tr>
+<tr>
+<td>执行延迟</td>
+<td>高</td>
+<td>低</td>
+</tr>
+<tr>
+<td>可扩展性</td>
+<td>高</td>
+<td>低</td>
+</tr>
+<tr>
+<td>数据规模</td>
+<td>大</td>
+<td>小</td>
+</tr>
+<tr>
+<td>子查询</td>
+<td>只可 from 子句中</td>
+<td>完全支持</td>
+</tr>
+</tbody></table>
+<p><a target="_blank" rel="noopener" href="https://www.notion.so/731b58068cc74fa883e545fc47a07063">HiveQL 于 SQL 的比较</a></p>
+<table>
+<thead>
+<tr>
+<th>比较项</th>
+<th>SQL</th>
+<th>HiveQL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ANSI SQL 更新</td>
+<td>支持 UPDATEVINSERT\DELETE  。。。</td>
+<td>不完全支持 insert OVERWRITEVINTO TABLE</td>
+</tr>
+<tr>
+<td>事务</td>
+<td>支持</td>
+<td>可支持(分桶、ORCFile 文件格式)</td>
+</tr>
+<tr>
+<td>模式</td>
+<td>写模式</td>
+<td>读模式</td>
+</tr>
+<tr>
+<td>数据保存</td>
+<td>块设备、本地文件系统</td>
+<td>HDFS</td>
+</tr>
+<tr>
+<td>延时</td>
+<td>低</td>
+<td>高</td>
+</tr>
+<tr>
+<td>多表播入</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>子查询</td>
+<td>完全支持</td>
+<td>只能用在 From 子句中</td>
+</tr>
+<tr>
+<td>视图</td>
+<td>Updatable</td>
+<td>Read-only</td>
+</tr>
+<tr>
+<td>可扩展性</td>
+<td>低</td>
+<td>高</td>
+</tr>
+<tr>
+<td>数据规模</td>
+<td>小</td>
+<td>大</td>
+</tr>
+</tbody></table>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/apache/hive">Github-Hive</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual">LanguageManual</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/" data-id="ckm733rt70009ivvx3ncvg5sx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2021/03/09/%E5%A4%A7%E6%95%B0%E6%8D%AE/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          大数据
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hive-优化</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%90%8E%E7%AB%AF/">后端</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">算法与数据结构</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hadoop/" rel="tag">Hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hive/" rel="tag">Hive</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Leetcode/" rel="tag">Leetcode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/React/" rel="tag">React</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scala/" rel="tag">Scala</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag">大数据</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Hadoop/" style="font-size: 17.5px;">Hadoop</a> <a href="/tags/Hive/" style="font-size: 20px;">Hive</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/Kafka/" style="font-size: 10px;">Kafka</a> <a href="/tags/Leetcode/" style="font-size: 10px;">Leetcode</a> <a href="/tags/Linux/" style="font-size: 12.5px;">Linux</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/Scala/" style="font-size: 12.5px;">Scala</a> <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" style="font-size: 10px;">大数据</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 15px;">工具</a> <a href="/tags/%E5%B9%B6%E5%8F%91/" style="font-size: 10px;">并发</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">March 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">December 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2021/03/09/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/">Hive-基础</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/">Hive-优化</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/">Hive-函数</a>
+          </li>
+        
+          <li>
+            <a href="/2021/03/09/Hive-HQL/">Hive-HQL</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
