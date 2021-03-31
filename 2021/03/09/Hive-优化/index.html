@@ -1,0 +1,286 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hive-优化 | Janhen</title><meta name="keywords" content="Hive"><meta name="author" content="Janhen"><meta name="copyright" content="Janhen"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="[TOC] 影响 Hive 效率的几乎从不是数据量过大，而是数据倾斜、数据冗余、Job &#x2F; IO过多、MapReduce 分配不合理等。 架构优化执行引擎选择通过参数 hive.execution.engine 控制，可选 MapReduce, Tez, Spark, Flink 作为执行引擎，在离线数仓中，批处理方面主要使用 Spark 优化器的使用在真正执行计算之前，生成和优化逻辑执行计划与物">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hive-优化">
+<meta property="og:url" content="http://example.com/2021/03/09/Hive-%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="Janhen">
+<meta property="og:description" content="[TOC] 影响 Hive 效率的几乎从不是数据量过大，而是数据倾斜、数据冗余、Job &#x2F; IO过多、MapReduce 分配不合理等。 架构优化执行引擎选择通过参数 hive.execution.engine 控制，可选 MapReduce, Tez, Spark, Flink 作为执行引擎，在离线数仓中，批处理方面主要使用 Spark 优化器的使用在真正执行计算之前，生成和优化逻辑执行计划与物">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2021-03-09T13:33:13.000Z">
+<meta property="article:modified_time" content="2021-03-09T13:33:40.146Z">
+<meta property="article:author" content="Janhen">
+<meta property="article:tag" content="Hive">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/03/09/Hive-%E4%BC%98%E5%8C%96/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-03-09 21:33:40'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="Janhen" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">27</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">14</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div></div></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Janhen</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Hive-优化</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2021-03-09T13:33:13.000Z" title="Created 2021-03-09 21:33:13">2021-03-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2021-03-09T13:33:40.146Z" title="Updated 2021-03-09 21:33:40">2021-03-09</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Hive-优化"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>[TOC]</p>
+<p>影响 Hive 效率的几乎从不是数据量过大，而是数据倾斜、数据冗余、Job / IO过多、MapReduce 分配不合理等。</p>
+<h2 id="架构优化"><a href="#架构优化" class="headerlink" title="架构优化"></a>架构优化</h2><h3 id="执行引擎选择"><a href="#执行引擎选择" class="headerlink" title="执行引擎选择"></a>执行引擎选择</h3><p>通过参数 hive.execution.engine 控制，可选 MapReduce, Tez, Spark, Flink 作为执行引擎，在离线数仓中，批处理方面主要使用 Spark</p>
+<h3 id="优化器的使用"><a href="#优化器的使用" class="headerlink" title="优化器的使用"></a>优化器的使用</h3><p>在真正执行计算之前，生成和优化逻辑执行计划与物理执行计划。</p>
+<ul>
+<li>Vectorize 矢量化查询执行</li>
+<li>Cost-Based Optimization: CBO 成本优化器</li>
+</ul>
+<p><strong>矢量化查询执行</strong> 要求执行引擎为Tez, 执行通过一次批量执行1024行而不是每行一行来提高扫描，聚合，过滤器和连接等操作的性能, 可一显着缩短查询执行时间。 需要使用 orc 格式存储数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 开启 </span></span><br><span class="line"><span class="keyword">set</span> hive.vectorized.execution.enabled = <span class="literal">true</span>;</span><br><span class="line"><span class="keyword">set</span> hive.vectorized.execution.reduce.enabled = <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>成本优化器</strong> 基于apache Calcite的，Hive的CBO通过查询成本(有analyze收集的统计信息)会生成有效率的执行计划，最终会减少执行的时间和资源的利用</p>
+<p>可定期执行表的分析，分析后数据存放在元数据库中</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 从 v0.14.0默认</span></span><br><span class="line"><span class="keyword">SET</span> hive.cbo.enable=<span class="literal">true</span>; </span><br><span class="line">true</span><br><span class="line"><span class="comment">-- 默认false</span></span><br><span class="line"><span class="keyword">SET</span> hive.compute.query.using.stats=<span class="literal">true</span>; </span><br><span class="line"><span class="comment">-- 默认false</span></span><br><span class="line"><span class="keyword">SET</span> hive.stats.fetch.column.stats=<span class="literal">true</span>; </span><br><span class="line"><span class="comment">-- 默认true</span></span><br><span class="line"><span class="keyword">SET</span> hive.stats.fetch.partition.stats=<span class="literal">true</span>; </span><br></pre></td></tr></table></figure>
+
+<h3 id="文件格式"><a href="#文件格式" class="headerlink" title="文件格式"></a>文件格式</h3><p>Parquet 和 ORC 都是 Apache 旗下的开源列式存储格式。列式存储比起传统的行式存 储更适合批量 OLAP 查询，并且也支持更好的压缩和编码。 选择 Parquet 的原因主要是它支持 Impala 查询引擎，并且对 update、delete 和事务性操作需求很低。</p>
+<p>选择 ORCFile 支持事务操作。</p>
+<h3 id="数据压缩"><a href="#数据压缩" class="headerlink" title="数据压缩"></a>数据压缩</h3><p>压缩的配置可以在hive的命令行中或者hive-site.xml文件中进行配置。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> hive.exec.compress.intermediate=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>DEFLATE</li>
+<li>GZIP: 扩展名 .gz</li>
+<li>Bzip2: 支持分割, 扩展名 .gz</li>
+<li>LZO：</li>
+<li>LZ4：</li>
+<li>Snappy: 不支持分割</li>
+</ul>
+<p>可在mapred-site.xml, hive-site.xml 配置，命令行配置</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> hive.intermediate.compression.codec=org.apache.hadoop.io.compress</span><br><span class="line">.SnappyCodec;</span><br><span class="line"><span class="keyword">SET</span> hive.exec.compress.output=<span class="literal">true</span>;</span><br><span class="line"><span class="keyword">SET</span> mapreduce.output.fileoutputformat.compress.codec =</span><br><span class="line">org.apache.hadoop.io.compress.SnappyCodc</span><br></pre></td></tr></table></figure>
+
+<h3 id="分区、分桶表"><a href="#分区、分桶表" class="headerlink" title="分区、分桶表"></a>分区、分桶表</h3><p>设计成分区表可以提升查询的性能，对于一个特定分区的查询，只会加载对应分区路  径的文件数据</p>
+<p>尽量避免层级较深的分区</p>
+<ul>
+<li>日期或时间。如year、month、day或者hour，</li>
+<li>地理位置。如国家、省份、城市</li>
+<li>业务逻辑。如部门、销售区域、客户</li>
+</ul>
+<p>分桶表 分桶表的组织方式是将HDFS上的文件分割成多个文件。 分桶可以加快数据采样，也可以提升join的性能(join的字段是分桶字段)，因为分桶可 以确保某个key对应的数据在一个特定的桶内(文件)，巧妙地选择分桶字段可以大幅 度提升join的性能。</p>
+<p>分桶字段可以选择经常用在过滤操作或者join操作的字段。</p>
+<h2 id="参数优化"><a href="#参数优化" class="headerlink" title="参数优化"></a>参数优化</h2><h3 id="本地模式"><a href="#本地模式" class="headerlink" title="本地模式"></a>本地模式</h3><p>支持将作业动态地转为本地模式, 当Hive处理的数据量较小时，启动分布式去处理数据会有点浪费。</p>
+<p>一个作业只要满足下面的条件，会启用本地模式</p>
+<ul>
+<li>输入文件的大小小于 <code>hive.exec.mode.local.auto.inputbytes.max</code> 配置的大小</li>
+<li>map 任务的数量小于 <code>hive.exec.mode.local.auto.input.files.max</code> 配置的大小</li>
+<li>reduce 任务的数量是1或者0</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SET</span> hive.exec.mode.local.auto=<span class="literal">true</span>; <span class="comment">-- 默认 false</span></span><br><span class="line"><span class="keyword">SET</span> hive.exec.mode.local.auto.inputbytes.max=<span class="number">50000000</span>;</span><br><span class="line"><span class="keyword">SET</span> hive.exec.mode.local.auto.input.files.max=<span class="number">5</span>; <span class="comment">-- 默认 4</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="严格模式"><a href="#严格模式" class="headerlink" title="严格模式"></a>严格模式</h3><p>强制不允许用户执行3种有风险的HiveQL语句，一旦执行会直接失败。</p>
+<ul>
+<li>查询分区表时不限定分区列的语句；</li>
+<li>两表 join 产生了笛卡尔积的语句；</li>
+<li>用 order by 来排序，但没有指定 limit 的语句。</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- DEFAULT strict</span></span><br><span class="line"><span class="keyword">set</span> hive.mapred.mode=nostrict</span><br></pre></td></tr></table></figure>
+
+<h3 id="JVM-重用"><a href="#JVM-重用" class="headerlink" title="JVM 重用"></a>JVM 重用</h3><p>Hadoop可以重用 JVM，通过共享 JVM 以串行而非并行的方式运行 map 或者 reduce。 避免 JVM 启动进程所耗费的时间会比作业执行的时间还要长。</p>
+<p>JVM的重用<font color="green">适用于同一个作业的 map 和 reduce，对于不同作业的 task 不能够共享 JVM。</font></p>
+<p>开启JVM重用将一直占用使用到的 task 插槽，以便进行重用，直到任务完成后才能释放。</p>
+<p>如果某个“不平衡的”job中有某几个reduce task执行的时间要比其他Reduce task消耗的时间多的多的话，那么保留的插槽就会一直空闲着却无法被其他的job使用，直到所有的task都结束了才会释放。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 代表同一个MR job中顺序执行的5个task重复使用一个JVM，减少启动和关闭的开销</span></span><br><span class="line"><span class="keyword">SET</span> mapreduce.job.jvm.numtasks=<span class="number">5</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="并行执行"><a href="#并行执行" class="headerlink" title="并行执行"></a>并行执行</h3><p>Hive 将查询转换成一个或多个阶段，MapReduce 阶段、抽样阶段、合并阶段、Limit 阶段..</p>
+<p>默认情况下一次只执行一个阶段，对于特定 Job 有多个阶段，阶段间非完全相互依赖，并行执行，可以缩短 job 的执行时间。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 默认false</span></span><br><span class="line"><span class="keyword">SET</span> hive.exec.parallel=<span class="literal">true</span>; </span><br><span class="line"><span class="comment">-- 默认8</span></span><br><span class="line"><span class="keyword">SET</span> hive.exec.parallel.thread.number=<span class="number">16</span>; </span><br></pre></td></tr></table></figure>
+
+<h3 id="推测执行"><a href="#推测执行" class="headerlink" title="推测执行"></a>推测执行</h3><p>在分布式集群环境下，因为程序Bug、负载不均衡、资源分布不均、网络情况等原因，会造成同一个作业的多个任务之间运行速度不一致，有些任务的运行速度可能明显慢于其他任务, 这些任务会拖慢作业的整体执行进度。</p>
+<p>Hadoop采用了推测执行机制，它根据一定的规则推测出 “拖后腿” 的任务，并为这样的任务启动一个备份任务，让该任务与原始任务同时处理同一份数据，并最终选用最先成功运行完成任务的计算结果作为最终结果。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> mapreduce.map.speculative=<span class="literal">true</span></span><br><span class="line"><span class="keyword">set</span> mapreduce.reduce.speculative=<span class="literal">true</span></span><br><span class="line"><span class="keyword">set</span> hive.mapred.reduce.tasks.speculative.execution=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="合并小文件"><a href="#合并小文件" class="headerlink" title="合并小文件"></a>合并小文件</h3><p>在map执行前合并小文件，减少map数</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 缺省参数</span></span><br><span class="line"><span class="keyword">set</span> hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat</span><br></pre></td></tr></table></figure>
+
+<p>在Map-Reduce的任务结束时合并小文件</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 在 map-only 任务结束时合并小文件，默认true</span></span><br><span class="line"><span class="keyword">SET</span> hive.merge.mapfiles = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 在 map-reduce 任务结束时合并小文件，默认false</span></span><br><span class="line"><span class="keyword">SET</span> hive.merge.mapredfiles = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 合并文件的大小，默认256M</span></span><br><span class="line"><span class="keyword">SET</span> hive.merge.size.per.task = <span class="number">268435456</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 当输出文件的平均大小小于该值时，启动一个独立的 map-reduce 任务进行文件merge</span></span><br><span class="line"><span class="keyword">SET</span> hive.merge.smallfiles.avgsize = <span class="number">16777216</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Fetch-模式"><a href="#Fetch-模式" class="headerlink" title="Fetch 模式"></a>Fetch 模式</h3><p>Fetch 模式是指 Hive 中对某些情况的查询可以不必使用 MapReduce 计算 在开启 fetch 模式之后，在全局查找、字段查找、limit 查找等都不启动 MapReduce</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- Default Value: minimal in Hive 0.10.0 through 0.13.1, </span></span><br><span class="line"><span class="comment">-- more in Hive 0.14.0 and later</span></span><br><span class="line">hive.fetch.task.conversion=more</span><br></pre></td></tr></table></figure>
+
+<h2 id="SQL-优化"><a href="#SQL-优化" class="headerlink" title="SQL 优化"></a>SQL 优化</h2><h3 id="列裁剪和分区裁剪"><a href="#列裁剪和分区裁剪" class="headerlink" title="列裁剪和分区裁剪"></a>列裁剪和分区裁剪</h3><p>列裁剪： SELECT 只查需要的列。少用 SELECT * 分区裁剪:  只读取需要的列。在分区剪裁中，当使用外关联时，如果将副表的过滤条件写在Where 后面，那么就会先全表关联，之后再过滤。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 列裁剪优化相关的配置项, default true</span></span><br><span class="line">hive.optimize.cp=<span class="literal">true</span></span><br><span class="line"><span class="comment"># 分区裁剪优化, default true</span></span><br><span class="line">hive.optimize.pruner=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="谓词下推"><a href="#谓词下推" class="headerlink" title="谓词下推"></a>谓词下推</h3><p>在 RDBMS 中，如 MySQL 也有 Predicate Pushdown(PPD) 的概念，将 SQL 语句中的 where 谓词逻辑尽可能提前执行，减少下游处理的数据量。</p>
+<p>如下的 SQQ， forum_topic 表过滤的 where 语句卸载子查询内部，而不是外部，Hive 谓词下推逻辑优化器是 PredicatePushDown，该优化器将 OperatorTree 中的 FilterOperator 向上提。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a.uid,a.event_type,b.topic_id,b.title</span><br><span class="line"><span class="keyword">from</span> calendar_record_log a</span><br><span class="line"><span class="keyword">left</span> <span class="keyword">outer</span> <span class="keyword">join</span> (</span><br><span class="line"><span class="keyword">select</span> uid,topic_id,title <span class="keyword">from</span> forum_topic</span><br><span class="line"><span class="keyword">where</span> pt_date = <span class="number">20190224</span> <span class="keyword">and</span> <span class="keyword">length</span>(<span class="keyword">content</span>) &gt;= <span class="number">100</span></span><br><span class="line">) b <span class="keyword">on</span> a.uid = b.uid</span><br><span class="line"><span class="keyword">where</span> a.pt_date = <span class="number">20190224</span> <span class="keyword">and</span> <span class="keyword">status</span> = <span class="number">0</span>;</span><br><span class="line"><span class="comment"># 谓词下推优化的配置项, default true</span></span><br><span class="line">hive.optimize.ppd = true</span><br></pre></td></tr></table></figure>
+
+<h3 id="sort-by-代替-order-by"><a href="#sort-by-代替-order-by" class="headerlink" title="sort by 代替 order by"></a>sort by 代替 order by</h3><p>为了控制 map 端数据分配到 reducer 的 key, 需要配置 distribute by 一起使用，如果不加 distribute by 的话，map 端数据就会随机分配到 reducer。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 以UID为key，以上传时间倒序、记录类型倒序输出记录数据</span></span><br><span class="line"><span class="keyword">select</span> uid,upload_time,event_type,record_data</span><br><span class="line"><span class="keyword">from</span> calendar_record_log</span><br><span class="line"><span class="keyword">where</span> pt_date &gt;= <span class="number">20190201</span> <span class="keyword">and</span> pt_date &lt;= <span class="number">20190224</span></span><br><span class="line"><span class="keyword">distribute</span> <span class="keyword">by</span> uid</span><br><span class="line"><span class="keyword">sort</span> <span class="keyword">by</span> upload_time <span class="keyword">desc</span>,event_type <span class="keyword">desc</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="group-by-代替-count-distinct"><a href="#group-by-代替-count-distinct" class="headerlink" title="group by 代替 count(distinct)"></a>group by 代替 count(distinct)</h3><p>去重计算数据量大时不好处理，数据量大的时候用一个 ReduceTask 来完成，导致整个 Job 很难完成  。 一般 COUNT DISTINCT 使用先 GROUP BY 再 COUNT 的方式替换。使用 group by 替换后， SQL 如下，会启动两个 MR Job，确保启动 Job 开销远小于计算耗时的时候使用。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="number">1</span>) <span class="keyword">from</span> (</span><br><span class="line">	<span class="keyword">select</span> uid <span class="keyword">from</span> calendar_record_log</span><br><span class="line">	<span class="keyword">where</span> pt_date &gt;= <span class="number">20190101</span></span><br><span class="line">	<span class="keyword">group</span> <span class="keyword">by</span> uid</span><br><span class="line">) t;</span><br></pre></td></tr></table></figure>
+
+<h3 id="group-by-配置调整"><a href="#group-by-配置调整" class="headerlink" title="group by 配置调整"></a>group by 配置调整</h3><p>并不是所有的聚合操作都需要在 Reduce 端完成，可现在 Map 端进行部分聚合，最后在 Reduce 端得出最终结果</p>
+<ul>
+<li><code>hive.map.aggr=true</code>: 是否在 Map 端进行聚合</li>
+<li><code>hive.groupby.napaggr.checkinterva=10000</code>: 在 Map 端进行聚合操作的条目数目</li>
+<li><code>hive.groupby.skewindata=true</code>: 有数据倾斜的时候进行负载均衡，默认 false</li>
+</ul>
+<p>当选项设定为 true，生成的查询计划会有两个 MR Job。第一个MR Job中，Map的输出结果会随机分布到Reduce中，每个Reduce做部分聚合操作，并输出结果，这样处理的结果是相同的Group By Key有可能被分发到不同的Reduce中，从而达到负载均衡的目的；第二个MR Job再根据预处理的数据结果按照Group By Key分布到Reduce中（这个过程可以保证相同的Group By Key被分布到同一个Reduce中），最后完成最终的聚合操作。</p>
+<h3 id="join-基础优化"><a href="#join-基础优化" class="headerlink" title="join 基础优化"></a>join 基础优化</h3><p>map join</p>
+<p>分桶 join</p>
+<h3 id="大表-join-大表处理空值或无意义值"><a href="#大表-join-大表处理空值或无意义值" class="headerlink" title="大表 join 大表处理空值或无意义值"></a>大表 join 大表处理空值或无意义值</h3><p>(1) 空 key 过滤 大表 Join 大表时，key 有大量的异常数据，相同的 key 发送到相同的 reducer 上，从而导致内存不够，结果 Join 的时候耗时长，可先通过 SQL 对其进行过滤。</p>
+<p>(2) 空 key 转化 空 Key 转化，key 非异常数据，必须包含在 join 的结果中，可对为空的 key 设置随机值，使数据随机均匀分到不同的 reducer 上，防止数据的倾斜问题 …</p>
+<h3 id="单独处理倾斜-key"><a href="#单独处理倾斜-key" class="headerlink" title="单独处理倾斜 key"></a>单独处理倾斜 key</h3><h3 id="调整-Map-数"><a href="#调整-Map-数" class="headerlink" title="调整 Map 数"></a>调整 Map 数</h3><p>通常情况下，作业通过 Input 目录产生一个/多个 map 任务 input 文件总个数、文件大小，集群设置的文件快大小。</p>
+<p>Q:  是不是map数越多越好？ 答案是否定的。如果一个任务有很多小文件（远远小于块大小128m），则每个小文件也会被当做一个块，用一个map任务来完成，而一个map任务启动和初始化的时间远远大于逻辑处理的时间，就会造成很大的资源浪费。而且，同时可执行的map数是受限的。</p>
+<p>Q:  是不是保证每个map处理接近128m的文件块，就高枕无忧了？ 答案也是不一定。比如有一个127m的文件，正常会用一个 map 去完成，但这个文件只有一个或者两个小字段，却有几千万的记录，如果 map 处理的逻辑比较复杂，用一个 map 任务去做，肯定也比较耗时。</p>
+<p>增加 Map 的方法：</p>
+<p>调整 maxSize 最大值，使 maxSize 小于 blockSize 增加 map 个数</p>
+<p>// TODO maxSize 对应的配置参数…</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">computeSliteSize(Math.max(minSize,Math.min(maxSize,blocksize)))&#x3D;blocksize&#x3D;128M</span><br></pre></td></tr></table></figure>
+
+<h3 id="调整-Reduce-数"><a href="#调整-Reduce-数" class="headerlink" title="调整 Reduce 数"></a>调整 Reduce 数</h3><p>过多的 reduce 问题</p>
+<ul>
+<li>过多的 reduce， 会过多启动、初始化 reduce 消耗时间和资源</li>
+<li>有多少个 reduce 就会有多少个输出文件，生成很多小文件，如果这些小文件作为下一个任务的输入，会出现小文件过多的问题</li>
+<li><code>hive.exec.reducers.bytes.per.reducer=256000000</code>: 每个 reduce 处理的数据量默认为 256MB</li>
+<li><code>hive.exec.reducers.max=1009</code>: 每个任务最大的 reduce 数，默认 1009</li>
+<li><code>mapreduce.job.reduces</code>： 设置每个 job 的 reduce 个数</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 设置每个 job 的 reduce 个数</span></span><br><span class="line"><span class="keyword">set</span> mapreduce.job.reduces=<span class="number">15</span></span><br></pre></td></tr></table></figure>
+
+<p>优化小结 Hadoop/Hive 处理数据过程，有几个显著特征：</p>
+<ul>
+<li>不怕数据多，就怕数据倾斜</li>
+<li>对 job 数比较多的作业运行效率相对比较低</li>
+<li>对 sum、count 等聚合操作而言，不存在数据倾斜问题</li>
+<li>count(distinct) 效率较低，数据量大容易出问题</li>
+</ul>
+<p>优化可以从几个方面着手：</p>
+<ul>
+<li>好的模型设计，事半功倍</li>
+<li>解决数据倾斜问题。根据配置和业务进行处理</li>
+<li>减少 job 数</li>
+<li>设置合理的map、reduce task 数</li>
+<li>对小文件进行合并，是行之有效的提高 Hive 效率的方法</li>
+<li>优化把握整体，单一作业的优化不如整体最优</li>
+</ul>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><p>Hive 自带的序列化与反序列化</p>
+<p><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/DeveloperGuide#DeveloperGuide-HiveSerDe">https://cwiki.apache.org/confluence/display/Hive/DeveloperGuide#DeveloperGuide-HiveSerDe</a></p>
+<p>Hive 参数说明的官方文档：<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/Hive/Configuration+Properties">https://cwiki.apache.org/confluence/display/Hive/Configuration+Properties</a></p>
+<p><a target="_blank" rel="noopener" href="https://tech.meituan.com/2014/02/12/hive-sql-to-mapreduce.html">Hive SQL的编译过程</a></p>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/DfvN7S_00oYw1hqAQDr48g">Hive/HiveSQL常用优化方法全面总结</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Janhen</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2021/03/09/Hive-%E4%BC%98%E5%8C%96/">http://example.com/2021/03/09/Hive-%E4%BC%98%E5%8C%96/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Hive/">Hive</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/"><img class="prev-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Hive-基础</div></div></a></div><div class="next-post pull-right"><a href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Hive-函数</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2021/03/09/Hive-函数/" title="Hive-函数"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-09</div><div class="title">Hive-函数</div></div></a></div><div><a href="/2021/03/09/Hive-基础/" title="Hive-基础"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-09</div><div class="title">Hive-基础</div></div></a></div><div><a href="/2020/11/10/Hive-安装/" title="Hive 安装"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-11-10</div><div class="title">Hive 安装</div></div></a></div><div><a href="/2021/03/09/Hive-HQL/" title="Hive-HQL"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-09</div><div class="title">Hive-HQL</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Janhen</div><div class="author-info__description">大数据、后端、运维分享</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">27</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">14</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E4%BC%98%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">架构优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E%E9%80%89%E6%8B%A9"><span class="toc-number">1.1.</span> <span class="toc-text">执行引擎选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.2.</span> <span class="toc-text">优化器的使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.3.</span> <span class="toc-text">文件格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%8E%8B%E7%BC%A9"><span class="toc-number">1.4.</span> <span class="toc-text">数据压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%8C%BA%E3%80%81%E5%88%86%E6%A1%B6%E8%A1%A8"><span class="toc-number">1.5.</span> <span class="toc-text">分区、分桶表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E4%BC%98%E5%8C%96"><span class="toc-number">2.</span> <span class="toc-text">参数优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">本地模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">严格模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JVM-%E9%87%8D%E7%94%A8"><span class="toc-number">2.3.</span> <span class="toc-text">JVM 重用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C%E6%89%A7%E8%A1%8C"><span class="toc-number">2.4.</span> <span class="toc-text">并行执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E6%B5%8B%E6%89%A7%E8%A1%8C"><span class="toc-number">2.5.</span> <span class="toc-text">推测执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E5%B0%8F%E6%96%87%E4%BB%B6"><span class="toc-number">2.6.</span> <span class="toc-text">合并小文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Fetch-%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.7.</span> <span class="toc-text">Fetch 模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SQL-%E4%BC%98%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">SQL 优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%97%E8%A3%81%E5%89%AA%E5%92%8C%E5%88%86%E5%8C%BA%E8%A3%81%E5%89%AA"><span class="toc-number">3.1.</span> <span class="toc-text">列裁剪和分区裁剪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%93%E8%AF%8D%E4%B8%8B%E6%8E%A8"><span class="toc-number">3.2.</span> <span class="toc-text">谓词下推</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sort-by-%E4%BB%A3%E6%9B%BF-order-by"><span class="toc-number">3.3.</span> <span class="toc-text">sort by 代替 order by</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#group-by-%E4%BB%A3%E6%9B%BF-count-distinct"><span class="toc-number">3.4.</span> <span class="toc-text">group by 代替 count(distinct)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#group-by-%E9%85%8D%E7%BD%AE%E8%B0%83%E6%95%B4"><span class="toc-number">3.5.</span> <span class="toc-text">group by 配置调整</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#join-%E5%9F%BA%E7%A1%80%E4%BC%98%E5%8C%96"><span class="toc-number">3.6.</span> <span class="toc-text">join 基础优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E8%A1%A8-join-%E5%A4%A7%E8%A1%A8%E5%A4%84%E7%90%86%E7%A9%BA%E5%80%BC%E6%88%96%E6%97%A0%E6%84%8F%E4%B9%89%E5%80%BC"><span class="toc-number">3.7.</span> <span class="toc-text">大表 join 大表处理空值或无意义值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E7%8B%AC%E5%A4%84%E7%90%86%E5%80%BE%E6%96%9C-key"><span class="toc-number">3.8.</span> <span class="toc-text">单独处理倾斜 key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E6%95%B4-Map-%E6%95%B0"><span class="toc-number">3.9.</span> <span class="toc-text">调整 Map 数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E6%95%B4-Reduce-%E6%95%B0"><span class="toc-number">3.10.</span> <span class="toc-text">调整 Reduce 数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">4.</span> <span class="toc-text">Ref</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/%E5%A4%A7%E6%95%B0%E6%8D%AE/" title="大数据"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大数据"/></a><div class="content"><a class="title" href="/2021/03/09/%E5%A4%A7%E6%95%B0%E6%8D%AE/" title="大数据">大数据</a><time datetime="2021-03-09T15:23:13.000Z" title="Created 2021-03-09 23:23:13">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/" title="Hive-基础"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-基础"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/" title="Hive-基础">Hive-基础</a><time datetime="2021-03-09T14:57:00.000Z" title="Created 2021-03-09 22:57:00">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/" title="Hive-优化"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-优化"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/" title="Hive-优化">Hive-优化</a><time datetime="2021-03-09T13:33:13.000Z" title="Created 2021-03-09 21:33:13">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/" title="Hive-函数"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-函数"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/" title="Hive-函数">Hive-函数</a><time datetime="2021-03-09T13:30:52.000Z" title="Created 2021-03-09 21:30:52">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-HQL/" title="Hive-HQL"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-HQL"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-HQL/" title="Hive-HQL">Hive-HQL</a><time datetime="2021-03-09T13:28:56.000Z" title="Created 2021-03-09 21:28:56">2021-03-09</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Janhen</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
