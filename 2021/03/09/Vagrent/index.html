@@ -1,0 +1,270 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vagrent | Janhen</title><meta name="keywords" content="工具"><meta name="author" content="Janhen"><meta name="copyright" content="Janhen"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="[TOC]  Vagrant 快速搭建虚拟机环境，可通过 Vagrantfile 配置文件进行定制，类似 Docker 管理容器。  一些特性：  多种虚拟器支持，如 VirsualBox(默认)、 Vmware、Docker、Hyper-V 方便网络配置，支持端口转发，配置私有、公有网络 方便进行宿主机与虚拟机之间共享文件提供丰富的插件，简化日常使用  环境安装Virtual Box Oracl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vagrent">
+<meta property="og:url" content="http://example.com/2021/03/09/Vagrent/index.html">
+<meta property="og:site_name" content="Janhen">
+<meta property="og:description" content="[TOC]  Vagrant 快速搭建虚拟机环境，可通过 Vagrantfile 配置文件进行定制，类似 Docker 管理容器。  一些特性：  多种虚拟器支持，如 VirsualBox(默认)、 Vmware、Docker、Hyper-V 方便网络配置，支持端口转发，配置私有、公有网络 方便进行宿主机与虚拟机之间共享文件提供丰富的插件，简化日常使用  环境安装Virtual Box Oracl">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2021-03-09T13:17:56.000Z">
+<meta property="article:modified_time" content="2021-03-09T13:22:08.136Z">
+<meta property="article:author" content="Janhen">
+<meta property="article:tag" content="工具">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/03/09/Vagrent/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-03-09 21:22:08'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="Janhen" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">27</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">14</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div></div></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Janhen</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Vagrent</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2021-03-09T13:17:56.000Z" title="Created 2021-03-09 21:17:56">2021-03-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2021-03-09T13:22:08.136Z" title="Updated 2021-03-09 21:22:08">2021-03-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Vagrent"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>[TOC] </p>
+<h1 id="Vagrant"><a href="#Vagrant" class="headerlink" title="Vagrant"></a>Vagrant</h1><blockquote>
+<p>快速搭建虚拟机环境，可通过 Vagrantfile 配置文件进行定制，类似 Docker 管理容器。</p>
+</blockquote>
+<p>一些特性：</p>
+<ul>
+<li>多种虚拟器支持，如 VirsualBox(默认)、 Vmware、Docker、Hyper-V</li>
+<li>方便网络配置，支持端口转发，配置私有、公有网络</li>
+<li>方便进行宿主机与虚拟机之间共享文件提供丰富的插件，简化日常使用</li>
+</ul>
+<h2 id="环境安装"><a href="#环境安装" class="headerlink" title="环境安装"></a>环境安装</h2><p><strong>Virtual Box</strong></p>
+<p>Oracle 开源的虚拟机软件，跨平台</p>
+<p>在 winows 上无法同时运行 Hyper-V 和 VisualBox，两者都是基于 CPU 等底层硬件的 Hypervisor 机制来实现的，而他们必须独占管理 Hypervisor。通过开启启动项选择是否加载 Hyper-V 服务，实现伪同时运行。</p>
+<p>问题由来： Docker 安装在 win10 上需要开启 Hyper-V，方便进行本地镜像的打包部署，同时需要 VirtualBox 进行模拟集群。</p>
+<p>问题处理：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/enweitech/article/details/52180373">解决Win7/8/10系统中的Hyper-V和VMware虚拟机软件共存问题</a></p>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/31642333/virtualbox-callee-rc-regdb-e-classnotreg-0x80040154">Virtualbox “Callee RC: REGDB_E_CLASSNOTREG” (0x80040154)?</a></p>
+<p><strong>Hyper-V</strong></p>
+<p>Win10 自带虚拟化工具，实现在 Win10 上运行 Docker 环境，而无需开启 Docker 的远程访问，开启后无法使用其他虚拟器</p>
+<p>对应的 vagrant 设置内存和CPU参数参考文档</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">boxes &#x3D; [</span><br><span class="line">    &#123;</span><br><span class="line">        :name &#x3D;&gt; &quot;docker-kubernetes&quot;,</span><br><span class="line">        :eth1 &#x3D;&gt; &quot;192.168.205.12&quot;,</span><br><span class="line">        :mem &#x3D;&gt; &quot;2048&quot;,</span><br><span class="line">        :cpu &#x3D;&gt; &quot;2&quot;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br><span class="line">...</span><br><span class="line">  config.vm.provider &quot;hyperv&quot; do |v|</span><br><span class="line">    v.ip_address_timeout&#x3D;121</span><br><span class="line">    v.memory&#x3D;opts[:mem]</span><br><span class="line">    v.cpus&#x3D;opts[:cpu]</span><br><span class="line">  end</span><br><span class="line">bcdedit &#x2F;set hypervisorlaunchtype off</span><br><span class="line">bcdedit &#x2F; set hypervisorlaunchtype auto</span><br></pre></td></tr></table></figure>
+
+<p><strong>XShell</strong></p>
+<p>SSH 命令工具</p>
+<p>一些特性</p>
+<ul>
+<li>标签化页面管理，方便管理打开的连接</li>
+<li>支持连接目录管理，方便进行多种环境管理</li>
+<li>支持分屏，方便对集群中的主从进行区分</li>
+<li>支持透明图，无需切换窗口查看遗忘的命令</li>
+<li>侧栏显示连接信息，方便集群中配置 IP 地址</li>
+</ul>
+<p><strong>Vagrant 管理</strong></p>
+<p>通过 Vagrantfile 文件设置好一些数值进行控制虚拟机，通过命令管理虚拟机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 全局管理</span><br><span class="line">vagrant global-status</span><br><span class="line">vagrant global-status --prune</span><br><span class="line">vagrant destroy &lt;vm_id&gt;</span><br><span class="line">vagrant halt &lt;vm_id&gt; &lt;vm_id2&gt;</span><br><span class="line">vagrant reload &lt;vm_id1&gt; &lt;vm_id2&gt;..</span><br><span class="line">vagrant up &lt;vm_id1&gt; &lt;vm_id2&gt;..</span><br></pre></td></tr></table></figure>
+
+<p><strong>安装虚拟机环境</strong></p>
+<p>快速安装环境，支持从远程获取对应的 Vagrantfile，之后拉取远程镜像；支持导入本地的 box 作为镜像；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># vagrant 命令</span><br><span class="line"># 初始化一个安装 centos&#x2F;7 虚拟机的 Vagrantfile</span><br><span class="line"># 根据目录下的 Vagrantfile 进行启动</span><br><span class="line"># 删除虚拟机</span><br><span class="line"># 查案虚拟机运行状态</span><br><span class="line">vagrant init centos&#x2F;7</span><br><span class="line">vagrant up</span><br><span class="line">vagrant status</span><br></pre></td></tr></table></figure>
+
+<p><strong>多种虚拟机支持</strong></p>
+<p>支持多种虚拟机，对应的配置memory、Cpu 方式不同</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 使用 vmware 虚拟机</span><br><span class="line"># 使用 hyper-v，需要管理员权限运行 vagrant，通过 Cmder 默认使用 admin 启动的 powershell 处理</span><br><span class="line">vagrant up --provider&#x3D;vmware_fusion</span><br><span class="line">vagrant up --provider&#x3D;hyperv</span><br></pre></td></tr></table></figure>
+
+<h2 id="Vagrant-插件"><a href="#Vagrant-插件" class="headerlink" title="Vagrant 插件"></a>Vagrant 插件</h2><p><strong>vagrant-hostmanager</strong></p>
+<p>实现多台虚拟机之间直接通过名称访问，原理为更改 host 文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 安装并验证插件</span><br><span class="line">vagrant plugin install vagrant-hostmanager</span><br><span class="line">vagrant plugin list</span><br><span class="line"># 在 Vagrantfile 中修改</span><br><span class="line">config.hostmanager.enabled &#x3D; true</span><br><span class="line">config.hostmanager.manage_guest &#x3D; true</span><br><span class="line">config.hostmanager.manage_host &#x3D; true</span><br><span class="line"># 执行命令，更新虚拟机上的hosts，同时更新主机上的 hosts</span><br><span class="line">vagrant hostmanager</span><br></pre></td></tr></table></figure>
+
+<p><strong>vagrant-vbguest</strong></p>
+<p>处理 VisualBox 中无法设置共享目录问题</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vagrant plugin install vagrant-vbguest</span><br><span class="line">vagrant vbguest --status</span><br><span class="line">vagrant vbguest --do install node1</span><br><span class="line"># 配置 vagrantfile</span><br><span class="line">config.vbguest.auto_update&#x3D;false</span><br></pre></td></tr></table></figure>
+
+<p><strong>vagrant-bindfs</strong></p>
+<p>非使用 visualBox 自带的共享目录，自定义使用文件系统 nfs，性能更高</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">vagrant plugin install vagrant-bindfs</span><br><span class="line"># 。。。</span><br><span class="line">node1. vm. synced_folder &quot;.&#x2F;app&quot;,&quot;&#x2F;mnt&#x2F;app-data&quot;, type:&quot;nfs</span><br><span class="line">node1. bindfs. bind_folder &quot;&#x2F;mnt&#x2F;app-data&quot;,&quot;&#x2F;app&quot;, force_user:&quot;root&quot;, force_group:&quot;root&quot;,o:&quot;nonempty&quot;</span><br><span class="line"># 代理设置插件</span><br><span class="line"># 在Vagrantfile中的config部分添加代理配置, 全部网络都走主机代理</span><br><span class="line">vagrant plugin install vagrant-proxyconf</span><br><span class="line">vim Vagrantfile</span><br><span class="line">  Vagrant.configure(&quot;2&quot;) do |config|</span><br><span class="line">    if Vagrant.has_plugin?(&quot;vagrant-proxyconf&quot;)</span><br><span class="line">      config.proxy.http     &#x3D; &quot;&lt;http:&#x2F;&#x2F;192.168.0.2:3128&#x2F;&gt;&quot;</span><br><span class="line">      config.proxy.https    &#x3D; &quot;&lt;http:&#x2F;&#x2F;192.168.0.2:3128&#x2F;&gt;&quot;</span><br><span class="line">      config.proxy.no_proxy &#x3D; &quot;localhost,127.0.0.1,.example.com&quot;</span><br><span class="line">    end</span><br><span class="line">    # ... other stuff</span><br><span class="line">  end</span><br><span class="line"></span><br><span class="line"># 复用虚拟机环境插件安装</span><br><span class="line">vagrant plugin list</span><br><span class="line">vagrant plugin install vagrant-scp</span><br><span class="line">vagrant scp</span><br><span class="line"></span><br><span class="line"># 处理虚拟机安装进行目录文件映射权限问题</span><br><span class="line">vagrant plugin install vagrant-vbguest</span><br><span class="line">vagrant plugin list</span><br></pre></td></tr></table></figure>
+
+<h2 id="Vagrantfile"><a href="#Vagrantfile" class="headerlink" title="Vagrantfile"></a>Vagrantfile</h2><blockquote>
+<p>构建虚拟机的硬件情况，实现控制 CPU、内存、Ip 等资源，同时支持虚拟机启动后执行初始化脚本，实现一些必要工具的安装，如 Docker。</p>
+</blockquote>
+<p>通过配置可实现：</p>
+<ul>
+<li>进行虚拟机目录与本地目录映射</li>
+<li>选择网络</li>
+<li>安装成功后执行特定脚本，直接安装要必要的工具以及 Docker 环境</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># config.vm.box 配置使用哪个box</span><br><span class="line">config.vm.box &#x3D; &quot;ubuntu16.04_louis&quot;# box ∈ vagrant box list</span><br><span class="line">config.vm.hostname               # 机器应该有的主机名</span><br><span class="line">aa.vm.hostname &#x3D; &quot;aa.test.com&quot;</span><br><span class="line">config.vm.network                # 在机器上配置网络</span><br><span class="line">config.vm.network&quot;forwarded_port&quot;,guest:80,host:8080</span><br><span class="line">aa.vm.network &quot;private_network&quot;, ip: &quot;192.168.55.100&quot;</span><br><span class="line">config.vm.provider               # 配置提供程序特定的配置，用于修改特定于某个 提供程序的设置</span><br><span class="line">config.vm.provision              # 配置置备 在机器上，使软件可以自动安装并创建机器时配置</span><br><span class="line">config.vm.synced_folder          # 配置 机器上的同步文件夹</span><br></pre></td></tr></table></figure>
+
+<p>配置实例：</p>
+<ul>
+<li>参数注入</li>
+<li>脚本执行，进行必要软件(vim,git…)、必要环境(如pip,java,docker) 的安装</li>
+<li>资源配置，可 CPU、内存…. 等硬件资源</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">boxes &#x3D; [</span><br><span class="line">    &#123;</span><br><span class="line">        :name &#x3D;&gt; &quot;docker-host&quot;,</span><br><span class="line">        :eth1 &#x3D;&gt; &quot;192.168.205.10&quot;,</span><br><span class="line">        :mem &#x3D;&gt; &quot;1024&quot;,</span><br><span class="line">        :cpu &#x3D;&gt; &quot;1&quot;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br><span class="line">boxes.each do |opts|</span><br><span class="line">    config.vm.provider &quot;virtualbox&quot; do |v|</span><br><span class="line">      v.customize [&quot;modifyvm&quot;, :id, &quot;--memory&quot;, opts[:mem]]</span><br><span class="line">      v.customize [&quot;modifyvm&quot;, :id, &quot;--cpus&quot;, opts[:cpu]]</span><br><span class="line">    end</span><br><span class="line">    config.vm.network :private_network, ip: opts[:eth1]</span><br><span class="line">    # 从主机特定文件读入脚本执行</span><br><span class="line">    config.vm.provision &quot;shell&quot;, privileged: true, path: &quot;.&#x2F;setup.sh&quot;</span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<h3 id="网络配置"><a href="#网络配置" class="headerlink" title="网络配置"></a>网络配置</h3><p>根据需要设置虚拟机网络 IP 地址固定，实现虚拟机中的软件根据名称访问，设置虚拟机可以访问外部的网络。</p>
+<p><strong>端口转发</strong></p>
+<p>将宿主机的端口与虚拟机的端口绑定，从而让外部通过端口可以访问虚拟机</p>
+<p>若 guest_ip 和 host_ip 两项配置为空，则局域网下的所有设备都可以访问该虚拟机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Vagrant.configure(2&quot;) do |config|</span><br><span class="line">config.vm.network</span><br><span class="line">&quot;forwarded_port&quot;(必选) &#x2F;&#x2F;端口转发标示</span><br><span class="line">,guest(必选):       # 虚拟端口</span><br><span class="line">,host(必选):        # 宿主机端口，值必须大于1024</span><br><span class="line">,gust_ip(可选):     # 虚拟机端口绑定虚拟机ip地址</span><br><span class="line">,host_ip(可选):     # 虚拟机端口绑定宿主机端口ip</span><br><span class="line">,protocol(可选):    # 指定通信协议，可以使用tcp&#x2F;udp,默认tcp</span><br><span class="line">,auto_correct(可选): # ture&#x2F;fasle,开机是否自动检测端口冲突</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line"># 实际配置</span><br><span class="line"># 配置2个端口映射，把物理机的8080映射到虚拟机80，物理机的2100映射到虚拟机的22</span><br><span class="line"># host_ip 在主机 IP 较为固定情况下配置使用</span><br><span class="line">config.vm.network :&quot;forwarded_port&quot;, guest: 80, host: 8060,host_ip: &quot;10.2.11.203&quot;</span><br><span class="line">config.vm.network :&quot;forwarded_port&quot;, guest: 22, host: 2100, host_ip: &quot;10.2.11.203&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>私有网络</strong></p>
+<p>虚拟机之间处在同一网段的地址可相互访问，主机可以访问虚拟机，无法通过虚拟机进行团队合作，不与宿主机的 IP 在同一个网段，防止冲突</p>
+<p>配置 vagrant 里面的虚拟机的私有网段的时候，切记不能和企业（公司）内部的 DHCP 分配的 IP 地址在同一网段，否则会发生冲突</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 配置 Static IP</span><br><span class="line">config.vm.network &quot;private_network&quot;, ip: &quot;192.168.50.10&quot;</span><br><span class="line">config.vm.network &quot;private_network&quot;, ip: &quot;192.168.55.20&quot;</span><br><span class="line"># 配置通过 DHCP 进行获取 IP，之后执行 &#96;vagrant reload&#96;</span><br><span class="line">config.vm.network &quot;private_network&quot;, type: &quot;dhcp&quot;</span><br><span class="line"></span><br><span class="line"># 实际使用</span><br><span class="line">Vagrant.configure(&quot;2&quot;) do |config|</span><br><span class="line">config.vm.network &quot;private_network&quot;, ip: &quot;192.168.50.10&quot;,</span><br><span class="line">auto_config: false</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p><strong>公有网络</strong></p>
+<p>与宿主机一样的网络配置， vagrant1.3+ 支持设置固定 IP，虚拟机 IP 与主机 IP 处在同一个网段时，实现局域网之间的互通，需要有路由器分配 IP.一般来说开发和测试使用较为封闭的网络模型是比较好的方式，通常不建议 vm 配置有 public_network 的网卡关联</p>
+<p>配置虚拟机自动获取公司内部DHCP服务器分配的IP地址，在局域网任何一台电脑上，都可以ssh到虚拟机，或访问虚拟机上提供的服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">config.vm.network &quot;public_network&quot;, ip: &quot;192.168.1.120&quot;</span><br><span class="line"></span><br><span class="line"># 配置动态 IP</span><br><span class="line"># 配置共有网络，使用主机上可以访问外网的接口(ipconfig)</span><br><span class="line"># 配置默认网关</span><br><span class="line">config.vm.network &quot;public_network&quot;,bridge: &quot;ens33&quot;</span><br><span class="line">config.vm.provision &quot;shell&quot;,run: &quot;always&quot;,inline: &quot;route add default gw 10.2.11.1&quot;</span><br><span class="line"></span><br><span class="line"># 配置静态 IP</span><br><span class="line"># auto_config：关闭自动配置</span><br><span class="line"># ifconfig enp0s8 10.2.11.196 netmask 255.255.255.0 up: 配置静态ip（这里的ip不能和公司内部的地址冲突）</span><br><span class="line"># route add default gw 10.2.11.1 指定网关（添加默认路由）</span><br><span class="line"># bridge： 绑定接口（物理机哪个接口可以上网）</span><br><span class="line">config.vm.network &quot;public_network&quot;, auto_config: false ,bridge: &quot;ens33&quot;</span><br><span class="line">config.vm.provision &quot;shell&quot;,run: &quot;always&quot;,inline: &quot;ifconfig eth1 10.2.11.196 netmask 255.255.0.0 up&quot;</span><br><span class="line">config.vm.provision &quot;shell&quot;,run: &quot;alway&quot;,inline: &quot;route add default gw 10.2.11.1&quot;</span><br><span class="line">config.vm.network &quot;public_network&quot;, auto_config: false </span><br><span class="line">config.vm.provision &quot;shell&quot;,run: &quot;always&quot;,inline: &quot;ip addr add 172.17.10.51&#x2F;21 dev eth1&quot; </span><br><span class="line">config.vm.provision &quot;shell&quot;,run: &quot;alway&quot;,inline: &quot;ip route add 172.17.8.0&#x2F;21 via 172.17.0.49&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="共享文件"><a href="#共享文件" class="headerlink" title="共享文件"></a>共享文件</h3><p>配置宿主机中的数据与虚拟机的数据映射</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># src： 是物理机的目录，相对路径，（相对于项目目录（&#x2F;vagrant&#x2F;ubuntu））</span><br><span class="line"># &#x2F;srv&#x2F;website: 虚拟机的目录，绝对路径，如果没有，会自动创建</span><br><span class="line">config.vm.synced_folder &quot;src&#x2F;&quot;, &quot;&#x2F;srv&#x2F;website&quot;</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">config.vm.synced_folder &quot;.&quot;, &quot;&#x2F;vagrant&quot;, disabled: true</span><br><span class="line">config.vm.synced_folder &quot;src&#x2F;&quot;,&quot;&#x2F;srv&#x2F;website&quot;,owner: &quot;root&quot;,group: &quot;root&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Q-amp-A"><a href="#Q-amp-A" class="headerlink" title="Q&amp;A"></a>Q&amp;A</h2><blockquote>
+<p>出现的问题以及对应的处理</p>
+</blockquote>
+<p>@Q: 处理本地下载对应镜像慢问题：</p>
+<p>直接下载、设置代理</p>
+<p>执行 <code>vagrant up --provider=hyperv</code>，在控制台找到下载地址，使用本地下载工具下载(代理)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 执行下载</span><br><span class="line"># 获取地址重新下载</span><br><span class="line"># 重命名为指定格式</span><br><span class="line">vagrant up --provider&#x3D;hyperv</span><br><span class="line"># 将下载的 .box 添加</span><br><span class="line"># 使用下载的 .box 进行初始化 </span><br><span class="line">vagrant box add centos-7_hyperv hyperv.box</span><br><span class="line">vagrant init centos-7_hyperv</span><br></pre></td></tr></table></figure>
+
+<p>@Q: 卸载重装 Vagrant 无法删除之前构建的虚拟机</p>
+<p>@Q: 公有网络设置静态 IP 的接口选择问题，无法选择 Wifi、以太网接口?? 待验证 选择不同的连接网卡是否可相互通信？</p>
+<p>选择以太网的桥接可实现内网互通</p>
+<p>@Q: 使用以太网接口指定公司网关显示网络不可达? 公司内网的安全性??</p>
+<p>相当于占用内网的一个 IP</p>
+<p>@Q: 二次使用 vagrantfile 时，报错 chmod: cannot access ‘/etc/systemd/system/docker.service.d/http-proxy.conf’: No such file or directory</p>
+<p>A： 通过 ssh 进入主机，创建该文件 // todo 搜寻更好的处理方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;docker.service.d&#x2F;http-proxy.conf</span><br></pre></td></tr></table></figure>
+
+<p>原因是修改了网络配置(改成桥接)，重新配置 docker 的代理，需要创建文件的方式来配置代理，而默认情况下无权限访问</p>
+<p>@Q: 同步文件夹显示编码问题， ==&gt; Test-Node: Rsyncing folder: /cygdrive/d/develop/Env2/Test-Node/ =&gt; /vagrant D:/ProgramFile/Vagrant/embedded/gems/2.2.5/gems/vagrant-2.2.5/lib/vagrant/util/io.rb:32:in `encode’: “5” from GBK to UTF-8 (Encoding::UndefinedConversionError)</p>
+<p>管理员权限编辑对应的 io.rb 文件，更改 vagrant 源码</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/hashicorp/vagrant/issues/9368">https://github.com/hashicorp/vagrant/issues/9368</a></p>
+<h2 id="Ref："><a href="#Ref：" class="headerlink" title="Ref："></a>Ref：</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.vagrantup.com/intro/getting-started/providers.html">多种类型虚拟机支持</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuyasen.com/post/vv_evn.html">使用vagrant和vitrualBox搭建虚拟开发环境</a></li>
+<li><a target="_blank" rel="noopener" href="https://app.vagrantup.com/boxes/search?provider=hyperv">Box-Search: hyperv</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.lujun9972.win/blog/2018/07/29/vagrant%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/index.html">Vagrant使用指南</a>: 插件、vagrant 代理、对应虚拟机代理</li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/entry/579015868ac247005ffa76ad">windows 下 使用 vagrant 来管理 linux 虚机开发环境</a></li>
+<li><a target="_blank" rel="noopener" href="https://superuser.com/questions/1354658/hyperv-static-ip-with-vagrant/1355010">HyperV - Static Ip with Vagrant</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/hafiz/p/9175484.html">征服诱人的Vagrant！</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.kancloud.cn/louis1986/vagrant">Vagrant学习文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.hedzr.com/2017/05/02/vagrant-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/">VAGRANT 网络配置</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.51cto.com/xslwahaha/1438669">ifconfig命令和ip命令及route命令</a>： 配置公有网络设定 IP、掩码、网关</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Janhen</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2021/03/09/Vagrent/">http://example.com/2021/03/09/Vagrent/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%B7%A5%E5%85%B7/">工具</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/03/09/Scala%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/"><img class="prev-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Scala语言基础</div></div></a></div><div class="next-post pull-right"><a href="/2020/12/17/Java-%E5%B9%B6%E5%8F%91%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Java 并发学习笔记</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2020/12/17/Arthas/" title="Arthas"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-17</div><div class="title">Arthas</div></div></a></div><div><a href="/2020/12/17/Percona-Toolkit/" title="Percona-Toolkit"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-17</div><div class="title">Percona-Toolkit</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Janhen</div><div class="author-info__description">大数据、后端、运维分享</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">27</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">14</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Janhen"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Vagrant"><span class="toc-number">1.</span> <span class="toc-text">Vagrant</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85"><span class="toc-number">1.1.</span> <span class="toc-text">环境安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Vagrant-%E6%8F%92%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">Vagrant 插件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Vagrantfile"><span class="toc-number">1.3.</span> <span class="toc-text">Vagrantfile</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE"><span class="toc-number">1.3.1.</span> <span class="toc-text">网络配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E6%96%87%E4%BB%B6"><span class="toc-number">1.3.2.</span> <span class="toc-text">共享文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q-amp-A"><span class="toc-number">1.4.</span> <span class="toc-text">Q&amp;A</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref%EF%BC%9A"><span class="toc-number">1.5.</span> <span class="toc-text">Ref：</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/%E5%A4%A7%E6%95%B0%E6%8D%AE/" title="大数据"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大数据"/></a><div class="content"><a class="title" href="/2021/03/09/%E5%A4%A7%E6%95%B0%E6%8D%AE/" title="大数据">大数据</a><time datetime="2021-03-09T15:23:13.000Z" title="Created 2021-03-09 23:23:13">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/" title="Hive-基础"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-基础"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-%E5%9F%BA%E7%A1%80/" title="Hive-基础">Hive-基础</a><time datetime="2021-03-09T14:57:00.000Z" title="Created 2021-03-09 22:57:00">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/" title="Hive-优化"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-优化"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-%E4%BC%98%E5%8C%96/" title="Hive-优化">Hive-优化</a><time datetime="2021-03-09T13:33:13.000Z" title="Created 2021-03-09 21:33:13">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/" title="Hive-函数"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-函数"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-%E5%87%BD%E6%95%B0/" title="Hive-函数">Hive-函数</a><time datetime="2021-03-09T13:30:52.000Z" title="Created 2021-03-09 21:30:52">2021-03-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/09/Hive-HQL/" title="Hive-HQL"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hive-HQL"/></a><div class="content"><a class="title" href="/2021/03/09/Hive-HQL/" title="Hive-HQL">Hive-HQL</a><time datetime="2021-03-09T13:28:56.000Z" title="Created 2021-03-09 21:28:56">2021-03-09</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Janhen</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
