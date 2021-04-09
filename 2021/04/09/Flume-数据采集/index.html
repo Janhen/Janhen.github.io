@@ -1,0 +1,452 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flume-数据采集 | Janhen</title><meta name="keywords" content="工具,数据采集"><meta name="author" content="Janhen"><meta name="copyright" content="Janhen"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="概述Flume 是 Cloudera 提供的一个分布式、高可靠、高可用的海量日志采集、聚合和传输的系统，基于流式架构，灵活简单。 实时采集日志的数据采集引擎。 作用： 实时读取服务器本地磁盘的数据，将数据写入到 HDFS。 特点  可与任意存储进程集成，Redis、 Kafka； 输入的速率大于写入目的存储的速率，会被缓存，减少 HDFS 压力； 事务基于 channel，两个事务模型（sende">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flume-数据采集">
+<meta property="og:url" content="http://example.com/2021/04/09/Flume-%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86/index.html">
+<meta property="og:site_name" content="Janhen">
+<meta property="og:description" content="概述Flume 是 Cloudera 提供的一个分布式、高可靠、高可用的海量日志采集、聚合和传输的系统，基于流式架构，灵活简单。 实时采集日志的数据采集引擎。 作用： 实时读取服务器本地磁盘的数据，将数据写入到 HDFS。 特点  可与任意存储进程集成，Redis、 Kafka； 输入的速率大于写入目的存储的速率，会被缓存，减少 HDFS 压力； 事务基于 channel，两个事务模型（sende">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2021-04-09T08:56:07.000Z">
+<meta property="article:modified_time" content="2021-04-09T08:57:16.567Z">
+<meta property="article:author" content="Janhen">
+<meta property="article:tag" content="工具">
+<meta property="article:tag" content="数据采集">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/04/09/Flume-%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-04-09 16:57:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="Janhen" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">38</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">18</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div></div></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Janhen</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Flume-数据采集</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2021-04-09T08:56:07.000Z" title="Created 2021-04-09 16:56:07">2021-04-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2021-04-09T08:57:16.567Z" title="Updated 2021-04-09 16:57:16">2021-04-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Flume-数据采集"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Flume 是 Cloudera 提供的一个分布式、高可靠、高可用的海量日志采集、聚合和传输的系统，基于流式架构，灵活简单。</p>
+<p>实时采集日志的数据采集引擎。</p>
+<p>作用： 实时读取服务器本地磁盘的数据，将数据写入到 HDFS。</p>
+<p>特点</p>
+<ul>
+<li>可与任意存储进程集成，Redis、 Kafka；</li>
+<li>输入的速率大于写入目的存储的速率，会被缓存，减少 HDFS 压力；</li>
+<li>事务基于 channel，两个事务模型（sender + receiver），保证消息被可靠发送</li>
+</ul>
+<p>Flume 是一个专用工具被设计为旨在往 HDFS，HBase 发送数据。它对 HDFS 有特殊的优化，集成了 Hadoop 的安全特性。官方建议数据被多个系统消费，使用 kafka；数据被设计给 Hadoop 使用，使用 Flume。</p>
+<h3 id="体系结构"><a href="#体系结构" class="headerlink" title="体系结构"></a>体系结构</h3><p><img src="http://img.janhen.com/20210130165358image-20201226102711887.png" alt="http://img.janhen.com/20210130165358image-20201226102711887.png"></p>
+<ul>
+<li>Agent： 为一个 JVM 进程，运行在日志手机节点服务器上。</li>
+<li>Source：以处理各种类型、各种格式的日志数据</li>
+<li>Channel：位于Source和Sink之间的缓冲</li>
+<li>Sink：不断地轮询 Channel 中的事件且批量地移除，将其写入到其他系统或另一个 Agent</li>
+<li>Event： ****Flume 数据传输的基本单元，以事件的形式将数据从源发送到目的。<ul>
+<li>Header: 附加的信息，可通过配置文件组的方式对匹配到的目录文件增加 header，可通过拦截器为 Event 增加特定的 header</li>
+<li>Body：事件的实际内容</li>
+</ul>
+</li>
+</ul>
+<h3 id="拓扑结构"><a href="#拓扑结构" class="headerlink" title="拓扑结构"></a>拓扑结构</h3><ul>
+<li>串行模式：</li>
+<li>复制模式： 单 Souce 多 Channel、Sink 模式</li>
+<li>负载均衡模式(单 Source、Channel 多 Sink )： 解决负载均衡和故障转移问题。</li>
+<li>聚合模式： 最常用 传送到一个集中收集日志的 flume，再由此 flume 上传到 hdfs、hive、hbase、消息队列中。</li>
+</ul>
+<p><img src="http://img.janhen.com/20210130165413image-20201226103600691.png" alt="http://img.janhen.com/20210130165413image-20201226103600691.png"></p>
+<h3 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h3><p><img src="http://img.janhen.com/20210130165418image-20201226103744350.png" alt="http://img.janhen.com/20210130165418image-20201226103744350.png"></p>
+<ol>
+<li>Source 接收事件，交给 Channel 处理器处理事件</li>
+<li>处理器通过拦截器 Interceptor，对事件一些处理,比如压缩解码，正则拦截，时间戳拦截，分类等</li>
+<li>经过拦截器处理过的事件再传给 Channel 选择器，将事件写入相应的 Channel</li>
+<li>最后由 Sink 处理器处理各个 Channel 的事件</li>
+</ol>
+<h2 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h2><blockquote>
+<p>负责接收数据到 Flume Agent 的组件。可以处理各种类型、各种格式的日志数据</p>
+</blockquote>
+<p>常见的 Source</p>
+<ul>
+<li>directory、http</li>
+<li>kafka source:</li>
+<li>avro source: 监听 Avro 端口来接收外部 avro 客户端的事件流。</li>
+<li>exec source: 可以将命令产生的输出作为 source。如 ping、tail。 可监控实时追加的文件，无法保证数据不丢。<ul>
+<li>tail -f： 文件改名/被删除，追踪停止</li>
+<li>tail -F: 等同于 <code>--follow=name --retry</code> ，根据文件名进行追踪，并保持重试，文件被删除/改名后，若再次创建相同的文件名，会继续追踪</li>
+</ul>
+</li>
+<li>Netcat source: 用来监听一个指定端口，并接收监听到的数据，常用于测试。</li>
+<li>spooling directory source: 将指定的文件加入到“自动搜集”目录中。</li>
+<li>taildir source： 监控指定的多个文件，支持续传。</li>
+</ul>
+<h3 id="拦截器"><a href="#拦截器" class="headerlink" title="拦截器"></a>拦截器</h3><blockquote>
+<p>在运行时，可实时对 event 进行修改或丢弃。</p>
+</blockquote>
+<p>拦截器的分类</p>
+<ul>
+<li>时间添加戳拦截器： 生成时间戳到 Eventheader 中</li>
+<li>Host添加拦截器： 生成主机 host/ip 到 Event header 中</li>
+<li>正则表达式过滤拦截器： 使用正则过滤需要的数据</li>
+<li>自定义拦截器： 可解析 Event Body 中的数据，提取到 Event Header 中做特殊处理，如提取日志的事件事件</li>
+</ul>
+<p><strong>时间添加戳拦截器</strong></p>
+<p>向每个 event 的 header 中添加一个时间戳属性进去，key → value = “timestamp” → 当前的毫秒</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a1.sources.r1.interceptors = i1 </span><br><span class="line">a1.sources.r1.interceptors.i1.type = timestamp</span><br><span class="line"><span class="comment"># 是否保留Event header中已经存在的同名时间戳，缺省值false</span></span><br><span class="line">a1.sources.r1.interceptors.i1.preserveExisting= <span class="literal">false</span></span><br><span class="line"><span class="comment"># 向event header中添加时间戳键值对的key</span></span><br><span class="line">a1.sources.r1.interceptors.i1.header= time</span><br></pre></td></tr></table></figure>
+
+<p><strong>Host添加拦截器</strong></p>
+<p>把当前Agent的 hostname 或者 IP 地址写入到 Event 的 header 中</p>
+<ul>
+<li><code>type</code>: host</li>
+<li><code>preserveExisting</code>: header 中存在同名属性是否保留，默认 false</li>
+<li><code>userIp</code>: ip 地址，默认 true, 为 false 时使用 hostname</li>
+<li><code>hostHeader</code>: 默认为 host, Event header 中添加 host 键值对的 key</li>
+</ul>
+<p><strong>正则表达式过滤拦截器</strong></p>
+<p>把 Event 的 body 当做字符串来处理，并用配置的正则表达式来匹配。</p>
+<p><strong>自定义拦截器</strong></p>
+<p>生产环境中常需要自定义拦截器, <code>org.apache.flume.interceptor.Interceptor</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Interceptor</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">initialize</span><span class="params">()</span></span>;</span><br><span class="line">  <span class="function">Event <span class="title">intercept</span><span class="params">(Event var1)</span></span>;</span><br><span class="line">  <span class="function">List&lt;Event&gt; <span class="title">intercept</span><span class="params">(List&lt;Event&gt; var1)</span></span>;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span></span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Builder</span> <span class="keyword">extends</span> <span class="title">Configurable</span> </span>&#123;</span><br><span class="line">    <span class="function">Interceptor <span class="title">build</span><span class="params">()</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Spooldir-source"><a href="#Spooldir-source" class="headerlink" title="Spooldir source"></a>Spooldir source</h3><blockquote>
+<p>监听一个指定的目录，向指定<strong>目录添加新的文件</strong>，sourcce 可获取到该信息</p>
+</blockquote>
+<p>注意事项</p>
+<ul>
+<li>以追加的方式向已被处理的文件中添加内容，source并不能识别</li>
+<li>复制的 spooldir 目录下的文件不可再打开编辑</li>
+<li>无法监控子目录的文件夹的变动</li>
+<li>被监控文件夹 500ms 扫描一次文件</li>
+<li>适合同步新文件，不适合对实时追加日志文件进行监听并同步</li>
+</ul>
+<h3 id="Taildir-source"><a href="#Taildir-source" class="headerlink" title="Taildir source"></a>Taildir source</h3><blockquote>
+<p>1.7.0 引入，支持断点续传、可监控多目录。相当于 spooldir source + exec source。生产环境中使用较多。</p>
+</blockquote>
+<p>特点：</p>
+<ul>
+<li>支持正则表达式匹配目录中的文件名</li>
+<li>监控日志文件，有文件写入进行收集</li>
+<li>高可靠，agent 重启后不会数据丢失</li>
+<li>不会对跟踪文件有任何处理，不会重命名、删除</li>
+<li>不能读取二进制文件，支持按照行读取文本文件。</li>
+</ul>
+<p><strong>Taildir source 配置</strong></p>
+<ul>
+<li><code>filegroups</code>：文件组，使用空格分隔</li>
+<li><code>filegroups.&lt;filegroupName&gt;</code>： 文件组中指定的绝对路径，可根据正则匹配路径</li>
+<li><code>positionFile</code>： 记录每个拖尾文件的索引节点，绝对路径和最后位置，解决断点续传问题</li>
+<li><code>batchSize</code>： 一次读取并发送到通道的最大行数，默认 100，一般需要更改下</li>
+<li><code>headers.&lt;filegroupName&gt;.&lt;headerKey&gt;</code>： 指定指定文件组的 header key，用于区分不同的文件，放入不同的 header 后，方便在拦截器中根据传入的 headerKey 进行特定的处理</li>
+<li><code>fileHeader</code>： 是否增加一个 header</li>
+<li><code>fileHeaderKey</code>：</li>
+<li><code>hdfs.useLocalTimeStamp</code>： 使用本地时间，而非事件时间</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a1.sources.r1.type &#x3D; TAILDIR </span><br><span class="line">a1.sources.r1.positionFile &#x3D; &#x2F;data&#x2F;janhen&#x2F;conf&#x2F;startlog_position.json </span><br><span class="line">a1.sources.r1.filegroups &#x3D; f1 </span><br><span class="line">a1.sources.r1.filegroups.f1 &#x3D; &#x2F;data&#x2F;janhen&#x2F;logs&#x2F;start&#x2F;.*log</span><br></pre></td></tr></table></figure>
+
+<p><strong>HDFS sink 配置</strong></p>
+<p>HDFS 文件的滚动方式：</p>
+<ul>
+<li>基于时间:</li>
+<li>基于文件大小: 默认 1024b，生产中调大</li>
+<li>基于 EVENT 数量:</li>
+<li>基于文件空闲时间:</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">a1.sinks.k1.type = hdfs </span><br><span class="line">a1.sinks.k1.hdfs.path = /user/data/logs/start/%Y-%m-%d/ </span><br><span class="line">a1.sinks.k1.hdfs.filePrefix = startlog.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置文件滚动方式（文件大小32M）, 默认 1024b, 生产中 &gt;&gt;</span></span><br><span class="line">a1.sinks.k1.hdfs.rollSize = 33554432 </span><br><span class="line"><span class="comment"># 基于时间的数量，默认10</span></span><br><span class="line">a1.sinks.k1.hdfs.rollCount = 0 </span><br><span class="line"><span class="comment"># 基于时间的滚动，默认30s</span></span><br><span class="line">a1.sinks.k1.hdfs.rollInterval = 0 </span><br><span class="line"><span class="comment"># 基于文件空闲时间</span></span><br><span class="line">a1.sinks.k1.hdfs.idleTimeout = 0 </span><br><span class="line"><span class="comment"># 默认值与 hdfs 副本数一致, 设为1是为了让 Flume 感知不到hdfs的块复制</span></span><br><span class="line">a1.sinks.k1.hdfs.minBlockReplicas = 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 向hdfs上刷新的event的个数, 默认100 </span></span><br><span class="line">a1.sinks.k1.hdfs.batchSize = 100</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用本地时间 </span></span><br><span class="line">a1.sinks.k1.hdfs.useLocalTimeStamp = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>agent 配置</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">a1.sources=r1</span><br><span class="line">a1.sinks = k1</span><br><span class="line">a1.channels = c1</span><br><span class="line"></span><br><span class="line"><span class="comment"># taildir source</span></span><br><span class="line">a1.sources.r1.type = TAILDIR</span><br><span class="line">a1.sources.r1.positionFile = /data/janhen/conf/startlog_position.json</span><br><span class="line">a1.sources.r1.filegroups = f1</span><br><span class="line">a1.sources.r1.filegroups.f1 = /data/janhen/logs/start/.*<span class="built_in">log</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># memorychannel</span></span><br><span class="line">a1.channels.c1.type = memory</span><br><span class="line">a1.channels.c1.capacity = 100000</span><br><span class="line">a1.channels.c1.transactionCapacity = 2000</span><br><span class="line"></span><br><span class="line"><span class="comment"># hdfs sink</span></span><br><span class="line">a1.sinks.k1.type = hdfs</span><br><span class="line">a1.sinks.k1.hdfs.path = /user/data/logs/start/%Y-%m-%d/</span><br><span class="line">a1.sinks.k1.hdfs.filePrefix = startlog.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置文件滚动方式（文件大小32M）</span></span><br><span class="line">a1.sinks.k1.hdfs.rollSize = 33554432</span><br><span class="line">a1.sinks.k1.hdfs.rollCount = 0</span><br><span class="line">a1.sinks.k1.hdfs.rollInterval = 0</span><br><span class="line">a1.sinks.k1.hdfs.idleTimeout = 0</span><br><span class="line">a1.sinks.k1.hdfs.minBlockReplicas = 1</span><br><span class="line"><span class="comment"># 向hdfs上刷新的event的个数</span></span><br><span class="line">a1.sinks.k1.hdfs.batchSize = 1000</span><br><span class="line"><span class="comment"># 使用本地时间</span></span><br><span class="line">a1.sinks.k1.hdfs.useLocalTimeStamp = <span class="literal">true</span></span><br><span class="line"><span class="comment"># Bind the source and sink to the channel</span></span><br><span class="line">a1.sources.r1.channels = c1</span><br><span class="line">a1.sinks.k1.channel = c1</span><br></pre></td></tr></table></figure>
+
+<p>使用自定义拦截器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">flume-ng agent --conf-file /root/janhen/conf/flumelog2hdfs1.conf -name a1 -Dflum e.roog.logger=INFO,console</span><br></pre></td></tr></table></figure>
+
+<h2 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h2><blockquote>
+<p>位于 Source 和 Sink 之间的缓冲区，是线程安全的，可同时处理多个 Source 的写入和多个 Sink 的读取，让 Source 与 Sink 可以运行在不同的速率上.</p>
+</blockquote>
+<p>常用的 Channel 类型：</p>
+<ul>
+<li>memory channel: 缓存到内存中，宕机数据丢失</li>
+<li>file channel: 缓存到文件中，宕机数据不丢失，访问速度较慢</li>
+<li><strong>kafka channel</strong>: 缓存到 Kafka 中。兼具 memory, file 的优点，支持扩展。速度快，容量大。</li>
+<li>jdbc channel: 缓存到关系型数据库中</li>
+</ul>
+<p>配置参数：</p>
+<ul>
+<li>type:</li>
+<li>capacity: 存储在 channel 中的最大事件数量，默认为 100，生产环境需要加大</li>
+<li>transactionCapacity：每次事务从 source 到 sink 的最大事件数量，默认为 100</li>
+<li>keep-alive：..</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a1.channels = c1</span><br><span class="line">a1.channels.c1.type = memory</span><br><span class="line"><span class="comment"># channel 最大缓存 50W 个事件</span></span><br><span class="line">a1.channels.c1.capacity = 500000</span><br><span class="line"><span class="comment"># 每批 channle 事务处理最大 2W 个事件</span></span><br><span class="line">a1.channels.c1.transactionCapacity = 20000</span><br></pre></td></tr></table></figure>
+
+<h3 id="Channel-选择器"><a href="#Channel-选择器" class="headerlink" title="Channel 选择器"></a>Channel 选择器</h3><p>确定 source 以何种方式向多个 channel 写， 默认为复制的。</p>
+<p><strong>复制选择器（Replicating Channel Selector)</strong> 可通过 <code>selector.optional</code> 指定哪些 channel 可选，空格分开，失败忽略不会进行实物回滚。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a1.sources.r1.selector.type &#x3D; replicatin</span><br></pre></td></tr></table></figure>
+
+<p><strong>多路复用选择器(Multiplexing Channel Selector)</strong> 按配置进行分发</p>
+<p><strong>自定义选择器</strong> 接口 <code>org.apache.flume.ChannelSelector</code> 的实现类, 实现类以及依赖的jar包在启动时候都必须放入Flume的classpath。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a1.sources &#x3D; r1 </span><br><span class="line">a1.channels &#x3D; c1 </span><br><span class="line">a1.sources.r1.selector.type &#x3D; com.janhen.bigdata.flume.MyChannelSelector</span><br></pre></td></tr></table></figure>
+
+<h2 id="Sink"><a href="#Sink" class="headerlink" title="Sink"></a>Sink</h2><blockquote>
+<p>Sink 组件用来保存数据，不断轮询 Channel 中的事件并批量的移除。将这些事件批量写入到存储或索引系统、或者被发送到另一个 Flume Agent。</p>
+</blockquote>
+<p>完全事务性的</p>
+<ul>
+<li>HDFS sink： 存储到 HDFS 中，使用较多，Flume 对其有特殊的优化</li>
+<li>Hive sink: Hive 事务写 events</li>
+<li>Kafka sink: 写入到 Kafka 中<ul>
+<li>官方提供的 flume Kafka 插件，自定义了 flume 的 sink，将数据从 channel 中取出，通过 Kafka 的 producer 写入到 Kafka 中，可以自定义分区等。</li>
+</ul>
+</li>
+<li>HBase sink: 写入到 HBase 中</li>
+<li>Logger sink: 信息显示在标准输出上，主要用于测试</li>
+<li>Avro sink: 转换为 Avro events</li>
+</ul>
+<h3 id="HDFS-Sink"><a href="#HDFS-Sink" class="headerlink" title="HDFS Sink"></a>HDFS Sink</h3><p>基本配置：</p>
+<ul>
+<li><code>hdfs.path</code>： 配置 sink 的基础目录</li>
+<li><code>hdfs.filePrefix</code>： 在目录下创建的文件前缀</li>
+<li><code>hdfs.fileSuffix</code>： 在目录下创建的文件后缀</li>
+<li><code>hdfs.useLocalTimeStamp</code>： 是否使用本地时间戳，默认 false</li>
+<li><code>hdfs.round</code>: 时间戳是否四舍五入, 默认 false</li>
+<li><code>hdfs.roundValue</code>： 四舍五入的最高倍数</li>
+<li><code>hdfs.roundUnit</code>: 可选 second, minute, hour，默认为 second</li>
+<li><code>hdfs.threadsPoolSize</code>：</li>
+</ul>
+<p>滚动生成文件配置</p>
+<ul>
+<li><code>hdfs.rollInterval</code>： 基于时间回滚，缺省 30s，0 表示不根据时间进行回滚</li>
+<li><code>hdfs.rollSize</code>： 基于文件大小回滚，缺省 1024byte，0 表示…</li>
+<li><code>hdfs.rollCount</code>： 基于 event 的数量回滚，缺省 10</li>
+<li><code>hdfs.idleTimeout</code>： 基于文件空闲时间回滚，关闭非活动文件超时时间，缺省禁用</li>
+<li><code>hdfs.minBlockReplicas</code>： HDFS 副本数，默认与 HDFS 副本数一致，将参数设置为 1，避免小文件和复制的网络开销</li>
+</ul>
+<p>其他：</p>
+<ul>
+<li>hdfs.batchSize： 向 hdfs 上刷新的 event 个数</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">a2.sinks.k2.hdfs.path = hdfs://linux121:9000/flume/%Y%m%d/%H%M</span><br><span class="line"><span class="comment"># 上传文件的前缀</span></span><br><span class="line">a2.sinks.k2.hdfs.filePrefix = <span class="built_in">log</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用本地时间戳</span></span><br><span class="line">a2.sinks.k2.hdfs.useLocalTimeStamp = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 500 个 Event 才 flush 到 HDFS 一次</span></span><br><span class="line">a2.sinks.k2.hdfs.batchSize = 500</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置文件类型，支持压缩。DataStream 没启用压缩</span></span><br><span class="line">a2.sinks.k2.hdfs.fileType = DataStream</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1 分钟滚动一次</span></span><br><span class="line">a2.sinks.k2.hdfs.rollInterval = 60</span><br><span class="line"></span><br><span class="line"><span class="comment"># 128M 滚动一次</span></span><br><span class="line">a2.sinks.k2.hdfs.rollSize = 134217700</span><br><span class="line"></span><br><span class="line"><span class="comment"># 文件的滚动与 Event 数量无关</span></span><br><span class="line">a2.sinks.k2.hdfs.rollCount = 0</span><br><span class="line"></span><br><span class="line"><span class="comment"># HDFS 最小冗余数</span></span><br><span class="line">a2.sinks.k2.hdfs.minBlockReplicas = 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>规避小文件、提高写入 HDFS 速度参数</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">a1.sinks.k1.type=hdfs</span><br><span class="line">a1.sinks.k1.hdfs.useLocalTimeStamp=<span class="literal">true</span></span><br><span class="line">a1.sinks.k1.hdfs.path=hdfs://linux121:9000/flume/events/%Y/%m/%d/ %H/%M</span><br><span class="line">a1.sinks.k1.hdfs.minBlockReplicas=1</span><br><span class="line">a1.sinks.k1.hdfs.rollInterval=3600</span><br><span class="line"><span class="comment"># 文件大小 1G 滚动</span></span><br><span class="line">a1.sinks.k1.hdfs.rollSize=1073741824</span><br><span class="line">a1.sinks.k1.hdfs.rollCount=0</span><br><span class="line">a1.sinks.k1.hdfs.idleTimeout=0</span><br><span class="line"></span><br><span class="line"><span class="comment"># 向hdfs上刷新的event个数</span></span><br><span class="line">a1.sinks.k1.hdfs.batchSize = 10000</span><br></pre></td></tr></table></figure>
+
+<h3 id="Sink-组逻辑处理器"><a href="#Sink-组逻辑处理器" class="headerlink" title="Sink 组逻辑处理器"></a>Sink 组逻辑处理器</h3><blockquote>
+<p>把多个 sink 分成一个组， Sink 组逻辑处理器可以对这同一个组里的几个 sink 进行 负载均衡 或者 其中一个sink发生故障后将输出 Event 的任务转移到其他的sink上。默认无 sink 组。</p>
+</blockquote>
+<p><strong>负载均衡</strong> 轮训，随机。。。 退避机制,backoff 设置，失败的 sink 放入黑名单 …</p>
+<p><strong>故障转移</strong> N 中只有一个在工作，其他备用 故障 sink 降级到一个池 设置 sink 组的选择器为 failove 为每一个 sink 设置一个唯一的优先级数值</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="事务机制与可用性"><a href="#事务机制与可用性" class="headerlink" title="事务机制与可用性"></a>事务机制与可用性</h3><blockquote>
+<p>保证数据在 Flume 流动过程中数据不丢失。</p>
+</blockquote>
+<p><strong>1、Put 事务:</strong></p>
+<p>在 Source 到 Channel 之间保证事务</p>
+<p>把一批 Event 放到一个事务中，这批 event 一次性的放入 Channel 中。</p>
+<p>(1) 执行流程：</p>
+<p>事务开始的时候会调用一个 doPut 方法， doPut 方法将一批数据放在 putList 中；</p>
+<ul>
+<li>putList在向 Channel 发送数据之前先检查 Channel 的容量能否放得下，如 果放不下一个都不放，只能 doRollback；</li>
+<li>数据批的大小取决于配置参数 batch size 的值；</li>
+<li>putList 的大小取决于配置 Channel 的参数 transaction capacity 的大 小，该参数大小就体现在putList上；</li>
+</ul>
+<p>数据顺利的放到 putList 之后，接下来可以调用 doCommit 方法，把 putList 中所有的 Event 放到 Channel 中，成功放完之后就清空 putList；</p>
+<p>(2) 事务的回滚(doRollback)：</p>
+<p>doRollback 方法会进行两项操作：将 putList 清空和抛出 ChannelException 异常。source 会捕捉到 doRollback 抛出的异常，然后 source 就将刚才的一批数据重新采集，然后重新开始一个新的事务。</p>
+<p><strong>2、Take 事务:</strong></p>
+<p>Channel 到 Sink 之间保证事务</p>
+<p>把一批 event 组成的事务统一拿出来到 sink 放到 HDFS 上。</p>
+<p>source、sink 的可靠不可控，随着具体使用 Source、Channel、Sink 的类型。</p>
+<p>(1) 执行过程</p>
+<p>doTake 方法会将 channel 中的 event 剪切到 takeList 中。后面接的是HDFS Sink 的话，在把 Channel 中的 event 剪切到 takeList 中的同时也往写入 HDFS 的 IO 缓冲流中放一份 event(数据写入 HDFS 是先写入 IO 缓冲流然后 flush 到 HDFS）；</p>
+<p>当 takeList 中存放了 batch size 数量的 event 之后，就会调用 doCommit 方法， doCommit 方法会做两个操作：</p>
+<ul>
+<li>针对 HDFS Sink，手动调用 IO 流的 flush 方法，将 IO 流缓冲区的数据写入到 HDFS磁盘中；</li>
+<li>清空 takeList 中的数据</li>
+</ul>
+<p>（2） 事务的回滚</p>
+<p>回滚并没有“一半”之说，它只会把整个 takeList 中的数据返回给 channel，然后继续进行数据的读写。这样开启下一个事务的时候容易造成数据重复的问题。</p>
+<h3 id="Flume-执行"><a href="#Flume-执行" class="headerlink" title="Flume 执行"></a>Flume 执行</h3><p>Agent JVM heap 一般为 4G ~ 8G，部署在单独的服务器上。</p>
+<p>全局参数</p>
+<ul>
+<li><p><code>--conf</code> / <code>-c</code>： 指定配置文件</p>
+</li>
+<li><p>-classpath,-C <cp>： 指定 …</p>
+</li>
+<li><p><code>--dryrun</code>,-d: 打印命令，实际不执行</p>
+</li>
+<li><pre><code>-Dproperty=value
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  ： 设置 JDK 系统属性</span><br><span class="line"></span><br><span class="line">  - flume.root.logger&#x3D;INFO,console： 调试时候使用，将日志打印到控制台</span><br><span class="line">  - org.apache.flume.log.printconfig&#x3D;true</span><br><span class="line">  - org.apache.flume.log.rawdata&#x3D;true</span><br><span class="line"></span><br><span class="line">Agent 参数</span><br><span class="line"></span><br><span class="line">- &#96;—-name&#96;: 指定 agent 的名称</span><br><span class="line"></span><br><span class="line">&#96;&#96;&#96;bash</span><br><span class="line">$FLUME_HOME&#x2F;bin&#x2F;flume-ng agent --name a1 \\</span><br><span class="line">  --conf-file $FLUME_HOME&#x2F;conf&#x2F;flume-netcat-logger.conf \\</span><br><span class="line">  -Dflume.root.logger&#x3D;INFO,console</span><br><span class="line">$FLUME_HOME&#x2F;bin&#x2F;flume-ng agent --conf &#x2F;opt&#x2F;apps&#x2F;flume-1.9&#x2F;conf \\</span><br><span class="line">  --conf-file conf&#x2F;flume-log2hdfs1.conf \\</span><br><span class="line">  -name a1 -Dflume.root.logger&#x3D;INFO,console</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+<p><strong>指定 JVM 参数运行</strong></p>
+<p><code>$FLUME_HOME/conf/flume-env.sh</code> 中指定运行时的 JVM 参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 $FLUME_HOME/conf/flume-env.sh 中指定运行时的 JVM 参数</span></span><br><span class="line"><span class="built_in">export</span> JAVA_OPTS=<span class="string">&quot;-Xms4000m -Xmx4000m -Dcom.sun.management.jmxremote&quot;</span></span><br><span class="line"></span><br><span class="line">flume-ng agent --conf /opt/apps/flume-1.9/conf \\</span><br><span class="line">  --conf-file /data/janhen/conf/flume-log2hdfs1.conf \\</span><br><span class="line">  -name a1 -Dflume.roog.logger=INFO,console</span><br></pre></td></tr></table></figure>
+
+<p><strong>生产环境时候的运行</strong></p>
+<p>nohup，该命令允许用户退出帐户/关闭终端之后继续运行相应的进程</p>
+<ul>
+<li><p>/dev/null，代表linux的空设备文件，所有往这个文件里面写入的内容都会丢 失，俗称黑洞</p>
+</li>
+<li><p>标准输入0，从键盘获得输入 /proc/self/fd/0</p>
+</li>
+<li><p>标准输出1，输出到屏幕（控制台） /proc/self/fd/1</p>
+</li>
+<li><p>错误输出2，输出到屏幕（控制台） /proc/self/fd/2</p>
+</li>
+<li><blockquote>
+<p>/dev/null 标准输出1重定向到 /dev/null 中，此时标准输出不存在，没有任何地方能够找到输出的内容</p>
+</blockquote>
+</li>
+<li><p>2&gt;&amp;1 错误输出将会和标准输出输出到同一个地方</p>
+</li>
+<li><blockquote>
+<p>/dev/null 2&gt;&amp;1 不会输出任何信息到控制台，也不会有任何信息输出到文件</p>
+</blockquote>
+</li>
+</ul>
+<p>中</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nohup flume-ng agent --conf /opt/apps/flume-1.9/conf \\</span><br><span class="line">  --conf-file /data/janhen/conf/flume-log2hdfs3.conf \\</span><br><span class="line">  -name a1 -Dflume.root.logger=INFO,LOGFILE &gt; /dev/null 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Flume-日志数据采集事项"><a href="#Flume-日志数据采集事项" class="headerlink" title="Flume 日志数据采集事项"></a><strong>Flume 日志数据采集事项</strong></h3><ul>
+<li>使用 taildir source 监控指定的多个目录，可以给不同目录的日志加上不同 header</li>
+<li>在每个目录中可以使用正则匹配多个文件</li>
+<li>使用自定义拦截器，主要功能是从 json 串中获取时间戳，加到 event 的 header 中</li>
+<li>hdfs sink 使用 event header 中的信息写数据（控制写文件的位置）</li>
+<li>hdfs 文件的滚动方式（基于文件大小、基于event数量、基于时间）</li>
+<li>调节 flume jvm 内存的分配</li>
+</ul>
+<h3 id="数据采集优化"><a href="#数据采集优化" class="headerlink" title="数据采集优化"></a>数据采集优化</h3><ul>
+<li>channel 选取 Kafka, 兼具 File Channel 的可靠性与 Memory Channel 的速度</li>
+<li>配置负载均衡</li>
+<li>根据数据采集的业务需求情况，替换成其他的日志采集组件，Logstash, FileBeat</li>
+<li>在 Flume 中过滤数据，剔除掉无用的数据，只收集核心的数据(json)</li>
+</ul>
+<h3 id="Flume-丢包问题"><a href="#Flume-丢包问题" class="headerlink" title="Flume 丢包问题"></a>Flume 丢包问题</h3><p>单机 upd 的 flume source 的配置，100+M/s数据量，10w qps flume就开始大量丢包。</p>
+<p>一般公司在使用 Flume 工作过程中，对业务日志进行监控，如 Flume agent 中有多少条日志，Flume到 Kafka 后有多少条日志等等，如果数据丢失保持在 1% 左右是没有问题的，当数据丢失达到 5% 左右时就必须采取相应措施。</p>
+<h3 id="采集日志"><a href="#采集日志" class="headerlink" title="采集日志"></a>采集日志</h3><p>采集 Nginx 日志，日志格式固定，但是缺少 sessionId</p>
+<p>Log4j 日志，带有 sessionId，与项目联系紧密</p>
+<h2 id="Refs"><a href="#Refs" class="headerlink" title="Refs"></a>Refs</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://flume.liyifeng.org/">中文flume帮助文档</a></li>
+</ul>
+<p><a target="_blank" rel="noopener" href="http://flume.apache.org/releases/content/1.9.0/FlumeUserGuide.html">Flume 1.9.0 User Guide - Apache Flume</a></p>
+<p>Flume 官方用户指南文档</p>
+<p><a target="_blank" rel="noopener" href="http://flume.apache.org/releases/content/1.9.0/FlumeUserGuide.html#taildir-source">Flume 1.9.0 User Guide - Apache Flume</a></p>
+<p>Flume tailDIR source 官方文档说明</p>
+<p><a target="_blank" rel="noopener" href="http://flume.apache.org/releases/content/1.9.0/FlumeUserGuide.html#flume-interceptors">Flume 1.9.0 User Guide - Apache Flume</a></p>
+<p>Flume 拦截器官方文档</p>
+<p><a target="_blank" rel="noopener" href="http://flume.apache.org/releases/content/1.9.0/FlumeUserGuide.html#hdfs-sink">Flume 1.9.0 User Guide - Apache Flume</a></p>
+<p>Flume HDFS sink 文档</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Janhen</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2021/04/09/Flume-%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86/">http://example.com/2021/04/09/Flume-%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%B7%A5%E5%85%B7/">工具</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86/">数据采集</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2021/04/09/MySQL-%E7%AE%A1%E7%90%86/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">MySQL-管理</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2021/03/09/Vagrent/" title="Vagrent"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-09</div><div class="title">Vagrent</div></div></a></div><div><a href="/2020/12/17/Arthas/" title="Arthas"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-17</div><div class="title">Arthas</div></div></a></div><div><a href="/2020/12/17/Percona-Toolkit/" title="Percona-Toolkit"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-17</div><div class="title">Percona-Toolkit</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Janhen</div><div class="author-info__description">大数据、后端、运维分享</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">38</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">18</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Janhen"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text">概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="toc-text">体系结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8B%93%E6%89%91%E7%BB%93%E6%9E%84"><span class="toc-text">拓扑结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-text">执行流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Source"><span class="toc-text">Source</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8B%A6%E6%88%AA%E5%99%A8"><span class="toc-text">拦截器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Spooldir-source"><span class="toc-text">Spooldir source</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Taildir-source"><span class="toc-text">Taildir source</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Channel"><span class="toc-text">Channel</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Channel-%E9%80%89%E6%8B%A9%E5%99%A8"><span class="toc-text">Channel 选择器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sink"><span class="toc-text">Sink</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS-Sink"><span class="toc-text">HDFS Sink</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sink-%E7%BB%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86%E5%99%A8"><span class="toc-text">Sink 组逻辑处理器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-text">其他</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="toc-text">事务机制与可用性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Flume-%E6%89%A7%E8%A1%8C"><span class="toc-text">Flume 执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Flume-%E6%97%A5%E5%BF%97%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E4%BA%8B%E9%A1%B9"><span class="toc-text">Flume 日志数据采集事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E4%BC%98%E5%8C%96"><span class="toc-text">数据采集优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Flume-%E4%B8%A2%E5%8C%85%E9%97%AE%E9%A2%98"><span class="toc-text">Flume 丢包问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%87%E9%9B%86%E6%97%A5%E5%BF%97"><span class="toc-text">采集日志</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Refs"><span class="toc-text">Refs</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/04/09/Flume-%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86/" title="Flume-数据采集"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Flume-数据采集"/></a><div class="content"><a class="title" href="/2021/04/09/Flume-%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86/" title="Flume-数据采集">Flume-数据采集</a><time datetime="2021-04-09T08:56:07.000Z" title="Created 2021-04-09 16:56:07">2021-04-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/09/MySQL-%E7%AE%A1%E7%90%86/" title="MySQL-管理"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySQL-管理"/></a><div class="content"><a class="title" href="/2021/04/09/MySQL-%E7%AE%A1%E7%90%86/" title="MySQL-管理">MySQL-管理</a><time datetime="2021-04-08T17:10:05.000Z" title="Created 2021-04-09 01:10:05">2021-04-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/09/MySQL-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D/" title="MySQL-备份与恢复"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySQL-备份与恢复"/></a><div class="content"><a class="title" href="/2021/04/09/MySQL-%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D/" title="MySQL-备份与恢复">MySQL-备份与恢复</a><time datetime="2021-04-08T17:06:57.000Z" title="Created 2021-04-09 01:06:57">2021-04-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/09/Mysql-%E6%97%A5%E5%BF%97/" title="Mysql-日志"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Mysql-日志"/></a><div class="content"><a class="title" href="/2021/04/09/Mysql-%E6%97%A5%E5%BF%97/" title="Mysql-日志">Mysql-日志</a><time datetime="2021-04-08T17:06:49.000Z" title="Created 2021-04-09 01:06:49">2021-04-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/09/MySQL-%E7%BB%93%E6%9E%84%E7%B4%A2%E5%BC%95%E4%B8%8ESQL%E4%BC%98%E5%8C%96/" title="MySQL-结构"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MySQL-结构"/></a><div class="content"><a class="title" href="/2021/04/09/MySQL-%E7%BB%93%E6%9E%84%E7%B4%A2%E5%BC%95%E4%B8%8ESQL%E4%BC%98%E5%8C%96/" title="MySQL-结构">MySQL-结构</a><time datetime="2021-04-08T17:06:14.000Z" title="Created 2021-04-09 01:06:14">2021-04-09</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Janhen</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
