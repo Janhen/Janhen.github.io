@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spark-SparkContext与任务调度 | Janhen</title><meta name="keywords" content="Spark"><meta name="author" content="Janhen"><meta name="copyright" content="Janhen"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Spark ContextSparkContext 涉及网络通信、分布式、消息、存储、计算、调度、缓存、度量、清理、文件服务和 UI 等方面，是程序的入口点。 SparkContext 内部组件 sparkConf： 设置 K-V 格式的参数，配置的优先级高于属性文件 sparkEnv： Spark 的运行环境, 所有的 Executor 都有对应的指定环境，开发者 API，无法对外调用 RpcE">
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spark-Master、Worker 启动和 SparkContext 初始化 | Janhen</title><meta name="keywords" content="Spark"><meta name="author" content="Janhen"><meta name="copyright" content="Janhen"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Master 与 Worker 解析RPC 框架Spark 中不同组件之间的通信、jar 的上传、Shuffle 数据的传输、Block 数据的复制与备份都是基于 RPC 来实现的。  RpcEndpoint： 表示一个消息通信体，可以接收、发送、处理消息。 construct: 构造器 onStart：启动 receive*: 用来接收RpcEndpoint send 或 ask 过来的消 息">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spark-SparkContext与任务调度">
+<meta property="og:title" content="Spark-Master、Worker 启动和 SparkContext 初始化">
 <meta property="og:url" content="http://example.com/2021/04/09/Spark-SparkContext%E4%B8%8E%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/index.html">
 <meta property="og:site_name" content="Janhen">
-<meta property="og:description" content="Spark ContextSparkContext 涉及网络通信、分布式、消息、存储、计算、调度、缓存、度量、清理、文件服务和 UI 等方面，是程序的入口点。 SparkContext 内部组件 sparkConf： 设置 K-V 格式的参数，配置的优先级高于属性文件 sparkEnv： Spark 的运行环境, 所有的 Executor 都有对应的指定环境，开发者 API，无法对外调用 RpcE">
+<meta property="og:description" content="Master 与 Worker 解析RPC 框架Spark 中不同组件之间的通信、jar 的上传、Shuffle 数据的传输、Block 数据的复制与备份都是基于 RPC 来实现的。  RpcEndpoint： 表示一个消息通信体，可以接收、发送、处理消息。 construct: 构造器 onStart：启动 receive*: 用来接收RpcEndpoint send 或 ask 过来的消 息">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
 <meta property="article:published_time" content="2021-04-08T18:05:42.000Z">
-<meta property="article:modified_time" content="2021-04-24T12:08:40.325Z">
+<meta property="article:modified_time" content="2021-05-07T07:51:05.359Z">
 <meta property="article:author" content="Janhen">
 <meta property="article:tag" content="Spark">
 <meta name="twitter:card" content="summary">
@@ -57,7 +57,7 @@
   isHome: false,
   isHighlightShrink: false,
   isToc: true,
-  postUpdate: '2021-04-24 20:08:40'
+  postUpdate: '2021-05-07 15:51:05'
 }</script><noscript><style type="text/css">
   #nav {
     opacity: 1
@@ -140,129 +140,227 @@
         }
       }
     })(window)</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="Janhen" type="application/atom+xml">
-</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">47</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">22</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Janhen</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Spark-SparkContext与任务调度</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2021-04-08T18:05:42.000Z" title="Created 2021-04-09 02:05:42">2021-04-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2021-04-24T12:08:40.325Z" title="Updated 2021-04-24 20:08:40">2021-04-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Spark-SparkContext与任务调度"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="Spark-Context"><a href="#Spark-Context" class="headerlink" title="Spark Context"></a>Spark Context</h2><p>SparkContext 涉及网络通信、分布式、消息、存储、计算、调度、缓存、度量、清理、文件服务和 UI 等方面，是程序的入口点。</p>
-<h3 id="SparkContext-内部组件"><a href="#SparkContext-内部组件" class="headerlink" title="SparkContext 内部组件"></a>SparkContext 内部组件</h3><ul>
-<li><strong>sparkConf</strong>： 设置 K-V 格式的参数，配置的优先级高于属性文件</li>
-<li>sparkEnv： Spark 的运行环境, 所有的 Executor 都有对应的指定环境，开发者 API，无法对外调用<ul>
-<li><strong>RpcEnv</strong>: 用于组件之间的通信</li>
-<li><strong>ShuffleManager</strong>： 管理本地和远程的 Block 数据的 Shuffle 操作，根据 <code>spark.shuffle.manager</code> 进行指定，默认使用的是 SortShuffleManager</li>
-<li><strong>BlockManager</strong>： 缓存持久化管理，为 Spark 的 Storage 模块，本身是 Master / Slave 的</li>
-<li><strong>MemoryManager</strong>： 内存管理, 默认使用同一内存管理 UnifiedMemoryManager</li>
-<li>SerializerManager： 序列化管理器</li>
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">47</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">21</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Janhen</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Spark-Master、Worker 启动和 SparkContext 初始化</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2021-04-08T18:05:42.000Z" title="Created 2021-04-09 02:05:42">2021-04-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2021-05-07T07:51:05.359Z" title="Updated 2021-05-07 15:51:05">2021-05-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Spark-Master、Worker 启动和 SparkContext 初始化"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="Master-与-Worker-解析"><a href="#Master-与-Worker-解析" class="headerlink" title="Master 与 Worker 解析"></a>Master 与 Worker 解析</h2><h3 id="RPC-框架"><a href="#RPC-框架" class="headerlink" title="RPC 框架"></a>RPC 框架</h3><p>Spark 中不同组件之间的通信、jar 的上传、Shuffle 数据的传输、Block 数据的复制与备份都是基于 RPC 来实现的。</p>
+<ul>
+<li>RpcEndpoint： 表示一个消息通信体，可以接收、发送、处理消息。<ul>
+<li>construct: 构造器</li>
+<li>onStart：启动</li>
+<li>receive*: 用来接收RpcEndpoint send 或 ask 过来的消 息<ul>
+<li>receive: 接收由RpcEndpointRef.send方法发送的消息，不需要立即处理</li>
+<li>receiveAndReply: 接受消息并回复。接收由RpcEndpointRef.ask发送的消息，需要立即处理</li>
+</ul>
+</li>
+<li>onStop：资源回收</li>
+</ul>
+</li>
+<li>RpcEnv： 管理着整个 RpcEndpoint 的生命周期<ul>
+<li>根据name或uri注册endpoints、管理各种消息的处理、停止endpoints。</li>
+</ul>
+</li>
+<li>RpcEndpointRef: 对远程 RpcEndpoint 的一个引用。当需要向一个具体的 RpcEndpoint 发送消息时，需要获取到该 RpcEndpoint 的引用，然后通过该引用发送消息。<ul>
+<li>send: Send-and-forget, 无需等待响应</li>
+<li>ask: 等待通信对端响应，返回 Future 异步获取返回结果</li>
+</ul>
+</li>
+</ul>
+<h3 id="Master-的运行"><a href="#Master-的运行" class="headerlink" title="Master 的运行"></a>Master 的运行</h3><p>为 RpcEndpoint，实现了 ThreadSafeRpcEndpoint 接口，是线程安全的。</p>
+<ul>
+<li><p>onStart：</p>
+<ul>
+<li>最主要进行恢复，Master 的 HA 方式：<ul>
+<li>ZOOKEEPER。</li>
+<li>FILESYSTEM。基于文件系统的单点恢复。</li>
+<li>CUSTOM。允许用户自定义 HA 的实现</li>
+<li>NONE。未配置HA，不会持久化集群的数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>receive:</p>
+<ul>
+<li><p>RegisterWorker： 注册 worker 的处理，接受到后，</p>
+<p>  按照创建 workerInfo </p>
+<p>  → 注册 workerInfo </p>
+<p>  → 向 Worker 发送 RegisteredWorker 消息，表示注册完成 </p>
+<p>  → 调用 schedule 方法进行资源调度</p>
+</li>
+<li><p>RegisterApplication: 注册应用程序App, 如果是 Master 是 standby，则忽略这个消息; 否则注册 application；返回结果并且开始调度</p>
+</li>
+<li><p>Heartbeat： 心跳消息处理。记录 worker 节点的最后心跳时间，用于过期剔除 worker</p>
+</li>
+<li><p>MasterChangeAcknowledged： master 更改消息。将 appId 的 app 的状态置为 WAITING，为切换 Master 做准备。</p>
+</li>
+<li><p>CheckForWorkerTimeOut： 检查 worker 是否超时，移除超时没有发送心跳的 worker 节点</p>
+</li>
+</ul>
+</li>
+<li><p>receiveAndReply:</p>
+<ul>
+<li>RequestKillDriver: kill driver 的请求</li>
+<li>RequestDriverStatus： driver 的状态请求</li>
+<li>RequestMasterState： 请求 master 的状态</li>
+<li>…</li>
+</ul>
+</li>
+</ul>
+<h3 id="Worker-的运行"><a href="#Worker-的运行" class="headerlink" title="Worker 的运行"></a>Worker 的运行</h3><ul>
+<li>onStart<ul>
+<li>向注册 Master</li>
+<li>启动额外的 shuffle 服务</li>
+<li>work节点申请资源</li>
+<li>启动 work 节点 的监控(MetricsSystem)</li>
+</ul>
+</li>
+<li>receive:<ul>
+<li>SendHeartbeat: Worker 收到 SendHeartbeat 消息后，会向 Master 转发 Heartbeat 消息。</li>
+<li>LaunchDriver: 启动 driver</li>
+<li>…</li>
+</ul>
+</li>
+</ul>
+<h3 id="交互"><a href="#交互" class="headerlink" title="交互"></a>交互</h3><p><strong>Worker 发送心跳</strong></p>
+<p>Master 处理 <code>RegisterWorker</code> 的消息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>Master 记录心跳的情况</p>
+<ul>
+<li><p>接收注册的消息 </p>
+</li>
+<li><p>记录最后一次发送的心跳时间 </p>
+</li>
+<li><p>回复注册的消息，发送心跳</p>
+</li>
+</ul>
+<p>Worker 发送心跳 </p>
+<ul>
+<li><p>每隔 60 / 4 秒发送一次 </p>
+</li>
+<li><p>自己给自己发送消息</p>
+</li>
+</ul>
+<p>额外的组件 </p>
+<ul>
+<li>后台定时转发线程 <code>forwordMessageScheduler</code></li>
+</ul>
+<h2 id="SparkContext"><a href="#SparkContext" class="headerlink" title="SparkContext"></a>SparkContext</h2><p>Spark Context 是程序的入口点。初始化时包含内部组件的创建和准备，涉及网络通信、分布式、消息、存储、计算、调度、缓存、度量、清理、文件服务和 UI 等方面。链接 Spark 集群，创建 RDD，累加器和广播变量。在 App 中将外部的数据转换为 RDD, 建立第一个 RDD，时 RDD 血缘关系的根，DAG 的根源。</p>
+<h3 id="内部组件"><a href="#内部组件" class="headerlink" title="内部组件"></a>内部组件</h3><ul>
+<li><strong>sparkConf</strong>： 设置 K-V 格式的参数，配置的优先级高于配置文件</li>
+<li><strong>sparkEnv</strong>： Spark 的运行环境, 所有的 Executor 都有对应的指定环境，开发者 API，无法对外调用，可以将数据存储在存储体系中、使用计算引擎对任务进行处理、可以在节点之间进行通信等。包含如下组件：<ul>
+<li><strong>RpcEnv</strong>: 使用 Netty 实现组件之间的通信</li>
+<li><strong>ShuffleManager</strong>： 管理本地和远程的 Block 数据的 Shuffle 操作，根据 <code>spark.shuffle.manager</code> 进行指定，默认使用的是 SortShuffleManager。</li>
+<li><strong>BlockManager</strong>： 缓存持久化管理，为 Spark 的 Storage 模块，本身也是 Master / Slave 的</li>
+<li><strong>MemoryManager</strong>： 内存管理, 默认使用统一内存管理 UnifiedMemoryManager, 有过期的 StaticMemoryManager</li>
+<li><strong>MapOutPutTracker</strong>: 跟踪 Map 阶段任务的输出状态，方便 reduce 阶段任务获取地址和中间结果，一般是 MapStatus 的处理。</li>
+<li>SerializerManager： 序列化管理器，可通过 spark.serializer 配置序列化的实现</li>
 <li>serializer： 序列化器</li>
-<li><strong>MapOutPutTracker</strong>: 跟踪 Map 阶段任务的输出状态，方便 reduce 阶段任务获取地址和中间结果。</li>
-<li>BroadcaseManager： 广播变量管理，使用 BT 协议分发广播变量</li>
-<li>MetricsSystem: 度量系统</li>
+<li>BroadcaseManager： 广播变量管理，使用 BT 协议分发广播变量，避免 Driver 分发广播变量给所有的 Executor</li>
+<li>MetricsSystem: 度量系统，有 source, sink，可将度量信息放到 SparkUI 上展示</li>
 <li>SecurityManager：安全管理</li>
 </ul>
 </li>
-<li>ConsoleProgressBar: _progressBar</li>
-<li>SparkUI:</li>
-<li>EventLoggingListener:</li>
-<li>ExecutorAllocationManager:</li>
-<li>ContextCleaner:</li>
-<li>MetricsSystem： 指标管理</li>
-<li>任务调度相关的：<ul>
-<li><strong>DAGScheduler</strong>： DAG 调度器, 负责创建 job，将 DAG 的 RDD 划分为不同的 Stage，提交 Stage</li>
-<li><strong>TaskScheduler</strong>：  任务调度器，按照调度算法对 ClusterManager 已经分配给应用程序的资源进行二次调度后分配任务，调度的 Task 是 DAGScheduler 创建的，DAGScheduler 是 TaskScheduler 的前置调度器。</li>
-<li><strong>SchedulerBackend</strong>： 用于对接不同的资源管理系统</li>
+<li>ConsoleProgressBar: _progressBar，进度条显示</li>
+<li>SparkUI: Web 页面展示，将度量信息展示出来，展示 RDD 的依赖关系，以 SparkListenerEvent 投递给 LiveListener，从 SparkListener 中读取数据展示</li>
+<li>EventLoggingListener: 事件日志监听器<ul>
+<li>配置 <code>spark.eventLog.enabled=true</code> 开启</li>
 </ul>
 </li>
+<li>ExecutorAllocationManager: Executor 动态分配管理器<ul>
+<li>可动态的分配最小 executor 数量，动态分配最大 executor 数量，每个 executor 可运行的 tasks 数量等</li>
 </ul>
-<p><strong>方法：</strong></p>
+</li>
+<li><strong>ContextCleaner</strong>: 清理超出 app 范围的 rdd、shuffleDependency 和 broadcast 对象</li>
+<li><strong>DAGScheduler</strong>： DAG 调度器, 负责创建 job，将 DAG 的 RDD 划分为不同的 Stage，提交 Stage</li>
+<li><strong>TaskScheduler</strong>：任务调度器，按照调度算法对 ClusterManager 已经分配给应用程序的资源进行二次调度后分配任务，调度的 Task 是 DAGScheduler 创建的，DAGScheduler 是 TaskScheduler 的前置调度器。</li>
+<li><strong>SchedulerBackend</strong>： 用于对接不同的资源管理系统，允许在 TaskSchedulerImpl 下插入不同的系统，如 StandaloneSchedulerBackend、CoarseGrainedSchedulerBackend、LocalSchedulerBackend</li>
+<li>LiveListenerBus： 事件总线，接受各个使用方的事件，异步方式对事件进行匹配和处理</li>
+<li>SparkStatusTracker： 状态追踪器，提供对作业、stage 的监控信息</li>
+</ul>
+<p><strong>SparkContext 方法：</strong></p>
 <ul>
-<li><code>runJob</code>:  action 内部调用的</li>
-<li>submitJob:</li>
-<li>submitMapStage: 内部 API</li>
+<li><code>**runJob**</code>:  action 内部调用的</li>
+<li><code>submitJob</code>: 提交一个作业以供执行，并返回一个包含结果的 FutureJob。</li>
+<li><code>setCheckpointDir</code>: 配置 checkpoint 目录，用于容错</li>
+<li><code>defaultParallelism</code>： 返回默认的并行度</li>
+<li>submitMapStage: 根据传入的 ShuffleDependency 提交 MapStage，为内部 API</li>
 <li>cancelJobGroup:</li>
 <li>cancelStage: 根据 stageId 和 reason 取消 DatScheduler 对应的 Stage</li>
-<li>setCheckpointDir: 配置 checkpoint 目录</li>
-<li>defaultParallelism： 默认的并行度</li>
+<li>makeRDD / parallelize: 根据集合创建 RDD</li>
+<li>textFile：根据文件创建 RDD</li>
+<li>register： 注册累加器</li>
+<li>longAccumulator/collectionAccumulator/doubleAccumulator： 返回默认的累加器</li>
+<li>broadcast：广播变量</li>
 </ul>
-<p>伴生对象：</p>
+<p><strong>SparkContext 伴生对象：</strong></p>
 <ul>
-<li>getOrCreate：</li>
-<li><code>createTaskScheduler</code>：Spark 功能的主要入口点。 返回 SchedulerBackend, TaskSchedueler，根据传入的 master 确定对应的 TaskSchedulerImpl 参数，确定 SchedulerBackend。<ul>
+<li><code>getOrCreate</code>：创建</li>
+<li>**<code>createTaskScheduler</code>**：Spark 功能的主要入口点。 返回 SchedulerBackend, TaskSchedueler，根据传入的 master 确定对应的 TaskSchedulerImpl 参数，确定 SchedulerBackend。<ul>
 <li>local[*], local[N], local-clusterxx spark://xxx, …</li>
 </ul>
 </li>
 </ul>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">createTaskScheduler</span></span>(</span><br><span class="line">      sc: <span class="type">SparkContext</span>,</span><br><span class="line">      master: <span class="type">String</span>,</span><br><span class="line">      deployMode: <span class="type">String</span>): (<span class="type">SchedulerBackend</span>, <span class="type">TaskScheduler</span>) = &#123;</span><br><span class="line">  master <span class="keyword">match</span> &#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="type">SPARK_REGEX</span>(sparkUrl) =&gt;</span><br><span class="line">        <span class="keyword">val</span> scheduler = <span class="keyword">new</span> <span class="type">TaskSchedulerImpl</span>(sc)</span><br><span class="line">        <span class="keyword">val</span> masterUrls = sparkUrl.split(<span class="string">&quot;,&quot;</span>).map(<span class="string">&quot;spark://&quot;</span> + _)</span><br><span class="line">        <span class="keyword">val</span> backend = <span class="keyword">new</span> <span class="type">StandaloneSchedulerBackend</span>(scheduler, sc, masterUrls)</span><br><span class="line">        <span class="comment">// 任务初始化</span></span><br><span class="line">        scheduler.initialize(backend)</span><br><span class="line">        (backend, scheduler)</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">private def createTaskScheduler(</span><br><span class="line">      sc: SparkContext,</span><br><span class="line">      master: String,</span><br><span class="line">      deployMode: String): (SchedulerBackend, TaskScheduler) = &#123;</span><br><span class="line">  master match &#123;</span><br><span class="line">  case SPARK_REGEX(sparkUrl) =&gt;</span><br><span class="line">        val scheduler = new TaskSchedulerImpl(sc)</span><br><span class="line">        val masterUrls = sparkUrl.split(&quot;,&quot;).map(&quot;spark://&quot; + _)</span><br><span class="line">        val backend = new StandaloneSchedulerBackend(scheduler, sc, masterUrls)</span><br><span class="line">        // 任务初始化</span><br><span class="line">        scheduler.initialize(backend)</span><br><span class="line">        (backend, scheduler)</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="SparkContext-初始化过程"><a href="#SparkContext-初始化过程" class="headerlink" title="SparkContext 初始化过程"></a>SparkContext 初始化过程</h3><ol>
+<h3 id="初始化过程"><a href="#初始化过程" class="headerlink" title="初始化过程"></a>初始化过程</h3><ol>
 <li>初始设置</li>
-<li>创建 SparkEnv</li>
-<li>创建 SparkUI</li>
-<li>Hadoop 相关配置，参数前缀为 spark.hadoop 的属性进行赋值，如配置 hdfs 的文件大小</li>
-<li>Executor 环境变量，如 executor 的执行内存和额外的 JVM 参数，默认执行内存为 1G，生产中需要加大</li>
-<li>注册 HeartbeatReceiver 心跳接收器</li>
+</ol>
+<p>对 SparkConf 进行复制，校验各种配置信息，必须包含 spark.master 和 spark.app.name</p>
+<ol start="2">
+<li><p>创建 SparkEnv</p>
+</li>
+<li><p>创建 SparkUI</p>
+</li>
+</ol>
+<p><code>spark.ui.enabled=true</code> 进行开启 ui</p>
+<ol start="4">
+<li><p>Hadoop 相关配置，参数前缀为 <code>spark.hadoop</code> 的属性进行赋值，如配置 hdfs 的文件大小</p>
+</li>
+<li><p>Executor 环境变量，如 executor 的执行内存和额外的 JVM 参数，默认执行内存为 1G，生产中需要加大</p>
+</li>
+<li><p>注册 HeartbeatReceiver 心跳接收器</p>
+</li>
+</ol>
+<p>生产中 driver 和 executor 可能运行在不同的节点上，driver 创建心跳接收器接受 executor 的心跳</p>
+<ol start="7">
 <li>创建 TaskScheduler、SchedulerBackend</li>
 </ol>
 <ul>
 <li>TaskScheduler 进行任务的提交，负责发送任务到 Cluster 运行，失败重试</li>
 </ul>
-<ol>
-<li>创建和启动 DAGScheduler，创建 Job, 将 DAG 中的 RDD 划分为 Stage 并提交 Stage</li>
-<li>启动 TaskScheduler、SchedulerBackend</li>
-<li>启动测量系统 MetricsSystem</li>
-<li>创建事件日志监听器，可将事件持久化到存储的监听器，为可选的组件</li>
-<li>创建和启动 ExecutorAllocationManager，对已经分配的 Executor 管理，可选的</li>
-<li>ContextCleaner 的创建与启动： 清理超出应用范围的 RDD, ShuffleDependency, Broadcase 对象</li>
-<li>自定义 SparkListener 与启动事件</li>
-<li>Spark 环境更新： 在 SpringContext 初始化时，对当前 ENV 有影响，更新新环境</li>
-<li>投递应用程序启动事件</li>
-<li>测量系统添加 Source：</li>
-<li>将 SparkContext 标记为激活： 从 contextBeingConstructred → activeContext</li>
+<ol start="8">
+<li>创建和启动 DAGScheduler，负责创建 Job, 将 DAG 中的 RDD 划分为 Stage 并提交 Stage</li>
 </ol>
-<h2 id="任务调度组件"><a href="#任务调度组件" class="headerlink" title="任务调度组件"></a>任务调度组件</h2><p>任务调度相关组件：</p>
-<ul>
-<li>DAGScheduler： class，负责高层的调度，将 Job 转换为 DAG 图</li>
-<li>TaskScheduler：trait, 负责实际每个具体 Task 的物理调度执行，默认只有一种实现 TaskSchedulerImpl<ul>
-<li>确定公共的逻辑，如决定作业执行的调度顺序，唤醒并启动推测任务</li>
-</ul>
+<p>维护 jobId 与 stageId、Stage、ActiveJob、缓冲 rdd 的 partition 位置信息</p>
+<ol start="9">
+<li><p>启动 TaskScheduler、SchedulerBackend</p>
 </li>
-<li>SchedulerBackend：trait, 有多种实现，分别对应不同的资源管理器, 完成应用程序向 Master 的注册</li>
+<li><p>启动测量系统 MetricsSystem</p>
+</li>
+</ol>
+<p>注册 sources → 注册 sinks → 将 sinks 增加 jetty 的 serveletContextHandler → 遍历 sinks 相关的 servletContextHandler，调用 attachHandler 将其绑定到 SparkUI 上</p>
+<ol start="11">
+<li><p>创建事件日志监听器，可将事件持久化到存储的监听器，为可选的组件</p>
+</li>
+<li><p>创建和启动 ExecutorAllocationManager，对已经分配的 Executor 管理，可选的，默认不创建</p>
+</li>
+<li><p>ContextCleaner 的创建与启动： 清理超出应用范围的 RDD, ShuffleDependency, Broadcase 对象</p>
+</li>
+<li><p>自定义 SparkListener 与启动事件</p>
+</li>
+<li><p>Spark 环境更新： 在 SpringContext 初始化时，对当前 ENV 有影响，更新新环境</p>
+</li>
+</ol>
+<p>将环境的 JVM 参数、Spark 属性、系统属性、classPath 作为环境明细信息</p>
+<ol start="16">
+<li>投递应用程序启动事件</li>
+</ol>
+<p>向 listenerBus 发送 SparkListenerApplicationStart 事件</p>
+<ol start="17">
+<li><p>测量系统添加 Source：创建 DAGSchedulerSource, BlockManagerSource, ExecutorAllocationManagerSource</p>
+</li>
+<li><p>将 SparkContext 标记为激活： 从 contextBeingConstructred → activeContext</p>
+</li>
+</ol>
+<h2 id="相关配置"><a href="#相关配置" class="headerlink" title="相关配置"></a>相关配置</h2><ul>
+<li><code>spark.executor.heartbeatInterval</code>： executor 发送心跳的间隔, 默认 10秒</li>
 </ul>
-<p><img src="http://img.janhen.com/20210414131026sparkcontextstart.jpg" alt="http://img.janhen.com/20210414131026sparkcontextstart.jpg"></p>
-<h3 id="DAGScheduler"><a href="#DAGScheduler" class="headerlink" title="DAGScheduler"></a><strong>DAGScheduler</strong></h3><p>创建 Job, 将 DAG 中的 RDD 划分到不同的 Stage，提交 Stage 等</p>
-<p>成员变量：</p>
-<ul>
-<li>JobWaiter: 等待 DAGScheduler 的 Job 完成</li>
-</ul>
-<p>主要的方法：</p>
-<ul>
-<li>submitJob: 发送消息</li>
-<li>handleJobSubmitted: 处理 Job 的提交</li>
-<li>createResultStage： 创建 ResultStage</li>
-<li>submitStage(stage)： 提交 ResultStage。根据 ResultStage 逐层调用父 stage, 从最上游 stage 开始逐步调用 TaskScheduler.submitTasks 方法提交 task 集合，最后提交 ResultStage 的 task 集合。</li>
-<li>submitMissingTasks(stage,jobId): 提交 tasks, 当 stage 的父 stage 可用时调用。</li>
-</ul>
-<h3 id="TaskScheduler"><a href="#TaskScheduler" class="headerlink" title="TaskScheduler"></a>TaskScheduler</h3><p><strong>TaskSchedulerImpl</strong>： TaskScheduler 唯一的实现，传入 SparkContext, maxTaskFailures, isLocal 作为构造器。为 TaskSet 创建和维护一个 TaskSetManager 并追踪任务的本地性和错误信息，会向 DAGScheduler 汇报执行情况。</p>
-<ul>
-<li>先调用 initialize / start，之后通过 submitTasks 方法提交 task sets</li>
-<li>initialize： 确定调度模式，FIFO/FAIR，选择对应的 schedulableBuilder，根据参数构建资源池</li>
-<li>start: SchedulerBackend 启动，启动 speculative 执行线程</li>
-<li>submitTasks： 提交 TaskSet</li>
-</ul>
-<p><strong>TaskSetManager</strong>: 根据 taskSet、maxTaskFailures, boacklistTracker 进行初始化，运行任务执行失败，可根据黑名单进行剔除。</p>
-<p>调度策略： 将 TaskSetManager 放到任务队列后的处理</p>
-<ul>
-<li>FIFO: TaskSetManager 根据先后顺序进入队列，出队列时取先进入的，为默认策略，只有一个 TaskSetManager 池。</li>
-<li>Fair 调度策略： 先对子 Pool 进行排序，再对子 Pool 中的 TaskSetManager 进行排序</li>
-</ul>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">class</span> <span class="title">TaskSchedulerImpl</span>(<span class="params"></span></span></span><br><span class="line"><span class="class"><span class="params">    val sc: <span class="type">SparkContext</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    val maxTaskFailures: <span class="type">Int</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    isLocal: <span class="type">Boolean</span> = false</span>)</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">TaskScheduler</span> <span class="keyword">with</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="comment">// TaskScheduler 初始化</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">initialize</span></span>(backend: <span class="type">SchedulerBackend</span>) &#123;</span><br><span class="line">    <span class="keyword">this</span>.backend = backend</span><br><span class="line">    schedulableBuilder = &#123;</span><br><span class="line">      schedulingMode <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="comment">// 确定调度模式</span></span><br><span class="line">        <span class="keyword">case</span> <span class="type">SchedulingMode</span>.<span class="type">FIFO</span> =&gt;</span><br><span class="line">          <span class="keyword">new</span> <span class="type">FIFOSchedulableBuilder</span>(rootPool)</span><br><span class="line">        <span class="comment">// 公平调度</span></span><br><span class="line">        <span class="keyword">case</span> <span class="type">SchedulingMode</span>.<span class="type">FAIR</span> =&gt;</span><br><span class="line">          <span class="keyword">new</span> <span class="type">FairSchedulableBuilder</span>(rootPool, conf)</span><br><span class="line">        <span class="keyword">case</span> _ =&gt;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">s&quot;Unsupported <span class="subst">$SCHEDULER_MODE_PROPERTY</span>: &quot;</span> +</span><br><span class="line">          <span class="string">s&quot;<span class="subst">$schedulingMode</span>&quot;</span>)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 根据参数创建资源池</span></span><br><span class="line">    schedulableBuilder.buildPools()</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 启动</span></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">start</span></span>() &#123;</span><br><span class="line">    <span class="comment">// SchedulerBackend 初始化</span></span><br><span class="line">    backend.start()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!isLocal &amp;&amp; conf.getBoolean(<span class="string">&quot;spark.speculation&quot;</span>, <span class="literal">false</span>)) &#123;</span><br><span class="line">      logInfo(<span class="string">&quot;Starting speculative execution thread&quot;</span>)</span><br><span class="line">      speculationScheduler.scheduleWithFixedDelay(<span class="keyword">new</span> <span class="type">Runnable</span> &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>(): <span class="type">Unit</span> = <span class="type">Utils</span>.tryOrStopSparkContext(sc) &#123;</span><br><span class="line">          checkSpeculatableTasks()</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;, <span class="type">SPECULATION_INTERVAL_MS</span>, <span class="type">SPECULATION_INTERVAL_MS</span>, <span class="type">TimeUnit</span>.<span class="type">MILLISECONDS</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 提交 TaskSet</span></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">submitTasks</span></span>(taskSet: <span class="type">TaskSet</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> tasks = taskSet.tasks</span><br><span class="line">    logInfo(<span class="string">&quot;Adding task set &quot;</span> + taskSet.id + <span class="string">&quot; with &quot;</span> + tasks.length + <span class="string">&quot; tasks&quot;</span>)</span><br><span class="line">    <span class="comment">// 加锁访问， TaskSetManager</span></span><br><span class="line">    <span class="keyword">this</span>.synchronized &#123;</span><br><span class="line">      <span class="comment">// 根据 TaskSet 创建 TaskSetManager</span></span><br><span class="line">      <span class="keyword">val</span> manager = createTaskSetManager(taskSet, maxTaskFailures)</span><br><span class="line">      <span class="keyword">val</span> stage = taskSet.stageId</span><br><span class="line">      <span class="keyword">val</span> stageTaskSets =</span><br><span class="line">        taskSetsByStageIdAndAttempt.getOrElseUpdate(stage, <span class="keyword">new</span> <span class="type">HashMap</span>[<span class="type">Int</span>, <span class="type">TaskSetManager</span>])</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Mark all the existing TaskSetManagers of this stage as zombie, as we are adding a new one.</span></span><br><span class="line">      <span class="comment">// This is necessary to handle a corner case. Let&#x27;s say a stage has 10 partitions and has 2</span></span><br><span class="line">      <span class="comment">// TaskSetManagers: TSM1(zombie) and TSM2(active). TSM1 has a running task for partition 10</span></span><br><span class="line">      <span class="comment">// and it completes. TSM2 finishes tasks for partition 1-9, and thinks he is still active</span></span><br><span class="line">      <span class="comment">// because partition 10 is not completed yet. However, DAGScheduler gets task completion</span></span><br><span class="line">      <span class="comment">// events for all the 10 partitions and thinks the stage is finished. If it&#x27;s a shuffle stage</span></span><br><span class="line">      <span class="comment">// and somehow it has missing map outputs, then DAGScheduler will resubmit it and create a</span></span><br><span class="line">      <span class="comment">// TSM3 for it. As a stage can&#x27;t have more than one active task set managers, we must mark</span></span><br><span class="line">      <span class="comment">// TSM2 as zombie (it actually is).</span></span><br><span class="line">      stageTaskSets.foreach &#123; <span class="keyword">case</span> (_, ts) =&gt;</span><br><span class="line">        ts.isZombie = <span class="literal">true</span></span><br><span class="line">      &#125;</span><br><span class="line">      stageTaskSets(taskSet.stageAttemptId) = manager</span><br><span class="line">      schedulableBuilder.addTaskSetManager(manager, manager.taskSet.properties)</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (!isLocal &amp;&amp; !hasReceivedTask) &#123;</span><br><span class="line">        <span class="comment">// 饥饿计时器固定间隔调度</span></span><br><span class="line">        starvationTimer.scheduleAtFixedRate(<span class="keyword">new</span> <span class="type">TimerTask</span>() &#123;</span><br><span class="line">          <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>() &#123;</span><br><span class="line">            <span class="comment">// 可能是资源不够或是 worker 没有注册上去</span></span><br><span class="line">            <span class="keyword">if</span> (!hasLaunchedTask) &#123;</span><br><span class="line">              logWarning(<span class="string">&quot;Initial job has not accepted any resources; &quot;</span> +</span><br><span class="line">                <span class="string">&quot;check your cluster UI to ensure that workers are registered &quot;</span> +</span><br><span class="line">                <span class="string">&quot;and have sufficient resources&quot;</span>)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">              <span class="keyword">this</span>.cancel()</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;, <span class="type">STARVATION_TIMEOUT_MS</span>, <span class="type">STARVATION_TIMEOUT_MS</span>)</span><br><span class="line">      &#125;</span><br><span class="line">      hasReceivedTask = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// SchedulerBackend 接收 offers</span></span><br><span class="line">    backend.reviveOffers()</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="SchedulerBackend"><a href="#SchedulerBackend" class="headerlink" title="SchedulerBackend"></a><strong>SchedulerBackend</strong></h3><p>一个 trait, 调度系统的后端接口，允许在 TaskSchedulerImpl 下插入不同的系统。有多种实现，如 StandaloneSchedulerBackend、LocalSchedulerBackend、CoarseGrainedSchedulerBackend。</p>
-<ul>
-<li>reviveOffers： 在 TaskSchedulerImpl 的 submitTasks(taskSet) 中调用</li>
-</ul>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark] <span class="class"><span class="keyword">trait</span> <span class="title">SchedulerBackend</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">start</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">stop</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="comment">// 接收 offers</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">reviveOffers</span></span>(): <span class="type">Unit</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">applicationId</span></span>(): <span class="type">String</span> = appId</span><br><span class="line">  <span class="comment">// 当前可并发启动的最大任务数</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">maxNumConcurrentTasks</span></span>(): <span class="type">Int</span></span><br><span class="line">  ..</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>CoarseGrainedSchedulerBackend</strong>:</p>
-<ul>
-<li>start: 对 driverEndpoint 进行注册</li>
-<li>makeOffers： 将集群的资源以 Offer 的方式发给上层的 TaskScheduler 处理</li>
-</ul>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[spark]</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CoarseGrainedSchedulerBackend</span>(<span class="params">scheduler: <span class="type">TaskSchedulerImpl</span>, val rpcEnv: <span class="type">RpcEnv</span></span>)</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">ExecutorAllocationClient</span> <span class="keyword">with</span> <span class="title">SchedulerBackend</span> <span class="keyword">with</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">start</span></span>() &#123;</span><br><span class="line">    <span class="keyword">val</span> properties = <span class="keyword">new</span> <span class="type">ArrayBuffer</span>[(<span class="type">String</span>, <span class="type">String</span>)]</span><br><span class="line">    <span class="keyword">for</span> ((key, value) &lt;- scheduler.sc.conf.getAll) &#123;</span><br><span class="line">      <span class="keyword">if</span> (key.startsWith(<span class="string">&quot;spark.&quot;</span>)) &#123;</span><br><span class="line">        properties += ((key, value))</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建并注册 driverEndpoint</span></span><br><span class="line">    <span class="comment">// TODO (prashant) send conf instead of properties</span></span><br><span class="line">    driverEndpoint = createDriverEndpointRef(properties)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将集群的资源以 Offer 的方式发给上层的 TaskScheduler 处理</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">makeOffers</span></span>() &#123;</span><br><span class="line">      <span class="comment">// Make sure no executor is killed while some task is launching on it</span></span><br><span class="line">      <span class="keyword">val</span> taskDescs = withLock &#123;</span><br><span class="line">        <span class="comment">// Filter out executors under killing</span></span><br><span class="line">        <span class="keyword">val</span> activeExecutors = executorDataMap.filterKeys(executorIsAlive)</span><br><span class="line">        <span class="comment">// ..</span></span><br><span class="line">        <span class="keyword">val</span> workOffers = activeExecutors.map &#123;</span><br><span class="line">          <span class="keyword">case</span> (id, executorData) =&gt;</span><br><span class="line">            <span class="keyword">new</span> <span class="type">WorkerOffer</span>(id, executorData.executorHost, executorData.freeCores,</span><br><span class="line">              <span class="type">Some</span>(executorData.executorAddress.hostPort))</span><br><span class="line">        &#125;.toIndexedSeq</span><br><span class="line">        <span class="comment">// 给 Task 分配资源</span></span><br><span class="line">        scheduler.resourceOffers(workOffers)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (!taskDescs.isEmpty) &#123;</span><br><span class="line">        <span class="comment">// !启动任务</span></span><br><span class="line">        launchTasks(taskDescs)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">reviveOffers</span></span>() &#123;</span><br><span class="line">    <span class="comment">// 向 DriverEndpoint 发送 ReviveOffers， driverEndpoint 接受 scheduler 的注册</span></span><br><span class="line">    driverEndpoint.send(<span class="type">ReviveOffers</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Janhen</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2021/04/09/Spark-SparkContext%E4%B8%8E%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/">http://example.com/2021/04/09/Spark-SparkContext%E4%B8%8E%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spark/">Spark</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/04/09/Spark-%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6%E5%92%8C%E4%BD%9C%E4%B8%9A%E6%89%A7%E8%A1%8C/"><img class="prev-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Spark-运行机制和作业执行</div></div></a></div><div class="next-post pull-right"><a href="/2021/04/09/MySQL-%E7%AE%A1%E7%90%86/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">MySQL-管理</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2021/05/05/Spark-SQL中Join的实现/" title="Spark-Join的原理"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-05-05</div><div class="title">Spark-Join的原理</div></div></a></div><div><a href="/2021/04/09/Spark-内存管理与持久化/" title="Spark-内存管理与持久化"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-09</div><div class="title">Spark-内存管理与持久化</div></div></a></div><div><a href="/2021/04/09/Spark-管理/" title="Spark-管理"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-09</div><div class="title">Spark-管理</div></div></a></div><div><a href="/2021/04/16/Spark实现KNN近邻算法/" title="Spark实现KNN近邻算法"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-16</div><div class="title">Spark实现KNN近邻算法</div></div></a></div><div><a href="/2021/05/05/Spark-Shuffle过程/" title="Spark-Shuffle 过程和原理"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-05-05</div><div class="title">Spark-Shuffle 过程和原理</div></div></a></div><div><a href="/2021/04/09/SparkCore-RDD-编程/" title="SparkCore-RDD-编程"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-09</div><div class="title">SparkCore-RDD-编程</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Janhen</div><div class="author-info__description">大数据、后端、运维分享</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">47</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">22</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Janhen"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark-Context"><span class="toc-text">Spark Context</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SparkContext-%E5%86%85%E9%83%A8%E7%BB%84%E4%BB%B6"><span class="toc-text">SparkContext 内部组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SparkContext-%E5%88%9D%E5%A7%8B%E5%8C%96%E8%BF%87%E7%A8%8B"><span class="toc-text">SparkContext 初始化过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E7%BB%84%E4%BB%B6"><span class="toc-text">任务调度组件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#DAGScheduler"><span class="toc-text">DAGScheduler</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TaskScheduler"><span class="toc-text">TaskScheduler</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SchedulerBackend"><span class="toc-text">SchedulerBackend</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/" title="Spark-数据倾斜"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-数据倾斜"/></a><div class="content"><a class="title" href="/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/" title="Spark-数据倾斜">Spark-数据倾斜</a><time datetime="2021-05-07T07:45:41.000Z" title="Created 2021-05-07 15:45:41">2021-05-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/05/05/Spark-Shuffle%E8%BF%87%E7%A8%8B/" title="Spark-Shuffle 过程和原理"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-Shuffle 过程和原理"/></a><div class="content"><a class="title" href="/2021/05/05/Spark-Shuffle%E8%BF%87%E7%A8%8B/" title="Spark-Shuffle 过程和原理">Spark-Shuffle 过程和原理</a><time datetime="2021-05-05T08:55:56.000Z" title="Created 2021-05-05 16:55:56">2021-05-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/05/05/Spark-SQL%E4%B8%ADJoin%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Spark-Join的原理"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-Join的原理"/></a><div class="content"><a class="title" href="/2021/05/05/Spark-SQL%E4%B8%ADJoin%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Spark-Join的原理">Spark-Join的原理</a><time datetime="2021-05-05T08:29:59.000Z" title="Created 2021-05-05 16:29:59">2021-05-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/22/Hadoop-MapReduce-%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E/" title="Hadoop-MapReduce-计算引擎"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hadoop-MapReduce-计算引擎"/></a><div class="content"><a class="title" href="/2021/04/22/Hadoop-MapReduce-%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E/" title="Hadoop-MapReduce-计算引擎">Hadoop-MapReduce-计算引擎</a><time datetime="2021-04-22T05:22:45.000Z" title="Created 2021-04-22 13:22:45">2021-04-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/22/Hadoop-HDFS-%E5%AD%98%E5%82%A8/" title="Hadoop-HDFS-存储"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hadoop-HDFS-存储"/></a><div class="content"><a class="title" href="/2021/04/22/Hadoop-HDFS-%E5%AD%98%E5%82%A8/" title="Hadoop-HDFS-存储">Hadoop-HDFS-存储</a><time datetime="2021-04-22T05:22:29.000Z" title="Created 2021-04-22 13:22:29">2021-04-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Janhen</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Janhen</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2021/04/09/Spark-SparkContext%E4%B8%8E%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/">http://example.com/2021/04/09/Spark-SparkContext%E4%B8%8E%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spark/">Spark</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/04/09/Spark-%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6%E5%92%8C%E4%BD%9C%E4%B8%9A%E6%89%A7%E8%A1%8C/"><img class="prev-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Spark-运行机制和作业执行</div></div></a></div><div class="next-post pull-right"><a href="/2021/04/09/MySQL-%E7%AE%A1%E7%90%86/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">MySQL-管理</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2021/05/05/Spark-SQL中Join的实现/" title="Spark-Join的原理"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-05-05</div><div class="title">Spark-Join的原理</div></div></a></div><div><a href="/2021/04/09/Spark-内存管理与持久化/" title="Spark-内存管理与持久化"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-09</div><div class="title">Spark-内存管理与持久化</div></div></a></div><div><a href="/2021/05/07/Spark-数据倾斜/" title="Spark-数据倾斜"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-05-07</div><div class="title">Spark-数据倾斜</div></div></a></div><div><a href="/2021/04/09/Spark-管理/" title="Spark-管理"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-09</div><div class="title">Spark-管理</div></div></a></div><div><a href="/2021/04/16/Spark实现KNN近邻算法/" title="Spark实现KNN近邻算法"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-16</div><div class="title">Spark实现KNN近邻算法</div></div></a></div><div><a href="/2021/05/05/Spark-Shuffle过程/" title="Spark-Shuffle 过程和原理"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-05-05</div><div class="title">Spark-Shuffle 过程和原理</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Janhen</div><div class="author-info__description">大数据、后端、运维分享</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">47</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">21</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Janhen"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Master-%E4%B8%8E-Worker-%E8%A7%A3%E6%9E%90"><span class="toc-text">Master 与 Worker 解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RPC-%E6%A1%86%E6%9E%B6"><span class="toc-text">RPC 框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Master-%E7%9A%84%E8%BF%90%E8%A1%8C"><span class="toc-text">Master 的运行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Worker-%E7%9A%84%E8%BF%90%E8%A1%8C"><span class="toc-text">Worker 的运行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A4%E4%BA%92"><span class="toc-text">交互</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SparkContext"><span class="toc-text">SparkContext</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E7%BB%84%E4%BB%B6"><span class="toc-text">内部组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E8%BF%87%E7%A8%8B"><span class="toc-text">初始化过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="toc-text">相关配置</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/" title="Spark-数据倾斜"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-数据倾斜"/></a><div class="content"><a class="title" href="/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/" title="Spark-数据倾斜">Spark-数据倾斜</a><time datetime="2021-05-07T07:45:41.000Z" title="Created 2021-05-07 15:45:41">2021-05-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/05/05/Spark-Shuffle%E8%BF%87%E7%A8%8B/" title="Spark-Shuffle 过程和原理"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-Shuffle 过程和原理"/></a><div class="content"><a class="title" href="/2021/05/05/Spark-Shuffle%E8%BF%87%E7%A8%8B/" title="Spark-Shuffle 过程和原理">Spark-Shuffle 过程和原理</a><time datetime="2021-05-05T08:55:56.000Z" title="Created 2021-05-05 16:55:56">2021-05-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/05/05/Spark-SQL%E4%B8%ADJoin%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Spark-Join的原理"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-Join的原理"/></a><div class="content"><a class="title" href="/2021/05/05/Spark-SQL%E4%B8%ADJoin%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Spark-Join的原理">Spark-Join的原理</a><time datetime="2021-05-05T08:29:59.000Z" title="Created 2021-05-05 16:29:59">2021-05-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/22/Hadoop-MapReduce-%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E/" title="Hadoop-MapReduce-计算引擎"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hadoop-MapReduce-计算引擎"/></a><div class="content"><a class="title" href="/2021/04/22/Hadoop-MapReduce-%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E/" title="Hadoop-MapReduce-计算引擎">Hadoop-MapReduce-计算引擎</a><time datetime="2021-04-22T05:22:45.000Z" title="Created 2021-04-22 13:22:45">2021-04-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/22/Hadoop-HDFS-%E5%AD%98%E5%82%A8/" title="Hadoop-HDFS-存储"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hadoop-HDFS-存储"/></a><div class="content"><a class="title" href="/2021/04/22/Hadoop-HDFS-%E5%AD%98%E5%82%A8/" title="Hadoop-HDFS-存储">Hadoop-HDFS-存储</a><time datetime="2021-04-22T05:22:29.000Z" title="Created 2021-04-22 13:22:29">2021-04-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Janhen</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
