@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spark-数据倾斜 | Janhen</title><meta name="keywords" content="spark"><meta name="author" content="Janhen"><meta name="copyright" content="Janhen"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="数据倾斜概述数据倾斜： Task 之间数据分配的非常不均匀 DataSkew 的原因： 数据倾斜一般发生在 shuffle 过程中。  数据异常： key 有大量的空值&#x2F;默认值 Map Task 数据倾斜 数据文件大小不一致，数据压缩格式不可切分 接收的数据源，如 Kafka 对应的数据分区不均匀   Reduce task 数据倾斜： 数据存在很多空值或缺省值 Shuffle： 外因，Shuff">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark-数据倾斜">
+<meta property="og:url" content="http://example.com/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/index.html">
+<meta property="og:site_name" content="Janhen">
+<meta property="og:description" content="数据倾斜概述数据倾斜： Task 之间数据分配的非常不均匀 DataSkew 的原因： 数据倾斜一般发生在 shuffle 过程中。  数据异常： key 有大量的空值&#x2F;默认值 Map Task 数据倾斜 数据文件大小不一致，数据压缩格式不可切分 接收的数据源，如 Kafka 对应的数据分区不均匀   Reduce task 数据倾斜： 数据存在很多空值或缺省值 Shuffle： 外因，Shuff">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2021-05-07T07:45:41.000Z">
+<meta property="article:modified_time" content="2021-05-07T07:46:50.321Z">
+<meta property="article:author" content="Janhen">
+<meta property="article:tag" content="spark">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-05-07 15:46:50'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="Janhen" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">47</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">22</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div></div><hr/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Janhen</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Spark-数据倾斜</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2021-05-07T07:45:41.000Z" title="Created 2021-05-07 15:45:41">2021-05-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2021-05-07T07:46:50.321Z" title="Updated 2021-05-07 15:46:50">2021-05-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Spark-数据倾斜"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="数据倾斜"><a href="#数据倾斜" class="headerlink" title="数据倾斜"></a>数据倾斜</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>数据倾斜： Task 之间数据分配的非常不均匀</p>
+<p><strong>DataSkew 的原因：</strong></p>
+<p>数据倾斜一般发生在 shuffle 过程中。</p>
+<ul>
+<li>数据异常： key 有大量的空值/默认值</li>
+<li>Map Task 数据倾斜<ul>
+<li>数据文件大小不一致，数据压缩格式不可切分</li>
+<li>接收的数据源，如 Kafka 对应的数据分区不均匀</li>
+</ul>
+</li>
+<li>Reduce task 数据倾斜：<ul>
+<li>数据存在很多空值或缺省值</li>
+<li>Shuffle： 外因，Shuffle 操作涉及到大量的磁盘、网络 IO 、对作业型任务影响极大</li>
+<li>Key 分布不均匀： 内部原因</li>
+<li>Shuffle + Key 分布不均匀(主因)：</li>
+</ul>
+</li>
+</ul>
+<p>主要原因为 shuffle + key 分布不均</p>
+<p><strong>DataSkew 问题定位：</strong></p>
+<ul>
+<li>了解数据 key 的分布情况</li>
+<li>一般通过 Spark Web UI 或其他监控方式出现的异常来进行综合判断</li>
+<li>查看代码中可能导致 shuffle 的算子出现</li>
+</ul>
+<p><strong>DataSkew 的影响:</strong></p>
+<ul>
+<li>OutOfMemory，某个 Task 莫名出现内存移除情况, 一般情况下，OOM 的原因都是数据倾斜</li>
+<li>某个 Task 执行特别慢, 大量数据交由一个 Task 处理，拖累整个程序</li>
+<li>Shuffle 过程报错</li>
+</ul>
+<h3 id="数据倾斜处理"><a href="#数据倾斜处理" class="headerlink" title="数据倾斜处理"></a>数据倾斜处理</h3><ul>
+<li><p>数据的预处理：</p>
+<ul>
+<li>过滤空值/默认值，filter + coalesce</li>
+<li>小区数据源带来的数据倾斜</li>
+</ul>
+</li>
+<li><p><strong>避免 Shuffle:</strong> 通过程序避免使用 shuffle 的算子完成相应的任务，通过改写程序实现。</p>
+</li>
+<li><p>减少 Shuffle 过程中的数量</p>
+<ul>
+<li>使用 groupBy –&gt; reduceByKey / aggregateByKey</li>
+<li>通过 Map 端的 Join 来减少</li>
+</ul>
+</li>
+<li><p>选择新的可用于聚合/join 的 key</p>
+<ul>
+<li>根据业务，选择新的 key 去做聚合或 join。可尝试使用更细的维度。</li>
+</ul>
+</li>
+<li><p><strong>改变 reduce 的并行度:</strong> 一般情况下不管用，数据倾斜可能是由很多 key 造成的</p>
+</li>
+<li><p>加盐强行打散 Key:</p>
+<p> 处理 ****shuffle + key 不能分散。</p>
+<ul>
+<li>为数据量特别大的 Key 增加随机前/后缀，使得原来 Key 相同的数据变为 Key 不相同的数据，从而使倾斜的数据集分散到不同的 Task 中，彻底解决数据倾斜问题。</li>
+</ul>
+</li>
+<li><p><strong>自定义 Partitioner</strong>: 使用自定义的 Partitioner，将原本被分配到同一个 Task 的不同 Key 分配到不同 Task。</p>
+</li>
+</ul>
+<h3 id="加盐打散-Key"><a href="#加盐打散-Key" class="headerlink" title="加盐打散 Key"></a><strong>加盐打散 Key</strong></h3><p><strong>两阶段聚合</strong></p>
+<p>不能改变原来的结果</p>
+<ul>
+<li>对于聚合类的 shuffle 操作导致的数据倾斜，效果较好。一般可以解决掉 DataSkew，将 Spark 作业的性能提升数倍以上。</li>
+<li>仅适用于聚合类的 shuffle 操作，适用范围相对较窄。如果是 join 类的 shuffle 操作，需要选择其他的解决方案。</li>
+</ul>
+<p>执行步骤：</p>
+<ul>
+<li>加盐打散 key。给每个 key 都加一个随机数，如 10 以内的随机数。此时 key 就被打散了</li>
+<li>局部聚合。对打上随机数的数据，执行一次聚合操作，得到结果</li>
+<li>全局聚合。将各个 key 的前缀去掉，再进行一次聚合操作，得到最终结果</li>
+</ul>
+<p><strong>采样倾斜 key 并拆分 join 操作</strong></p>
+<p>使用场景：计算两个 RDD /两张表中的 key 分布情况。如果出现数据倾斜，是其中一个 RDD/Hive 表中的<strong>少数几个 key 的数据量过大</strong>，而另一个 RDD/Hive 表中的所有 key 都分布比较均匀，那么采用这个解决方案比较合适。</p>
+<p>处理步骤：</p>
+<p>1、对包含少数几个数据量过大的 key 的那个 RDD，通过 sample 算子采样出一份样本来，然后统计一下每个 key 的数量，计算出数据量最大的是哪几个 key；</p>
+<p>2、将这几个 key 对应的数据从原来的 RDD 中拆分出来，形成一个单独的 RDD，并给每个 key 都打上 n 以内的随机数作为前缀，而不会导致倾斜的大部分 key 形成另外一个 RDD；</p>
+<p>3、将需要 join 的另一个 RDD，也过滤出来那几个倾斜 key 对应的数据并形成一个单独的 RDD，将每条数据膨胀成 n 条数据，这 n 条数据都按顺序附加一个 0~n 的前缀，不会导致倾斜的大部分 key 也形成另外一个 RDD；</p>
+<p>4、再将附加了随机前缀的独立 RDD 与另一个膨胀 n 倍的独立 RDD 进行 join，此时就可以将原先相同的 key 打散成 n 份，分散到多个 task 中去进行 join 了；</p>
+<p>5、另外两个普通的 RDD 就照常 join 即可；</p>
+<p>6、最后将两次 join 的结果使用 union 算子合并起来即可，就是最终的 join 结果。</p>
+<p><strong>使用随机前缀和扩容再进行 join</strong></p>
+<p>业务场景：如果在进行 join 操作时，RDD 中有大量的 key 导致数据倾斜，进行分拆 key 没什么意义，此时就只能使用最后一种方案来解决问题了。 处理步骤：</p>
+<p>1、选一个 RDD，将每条数据都打上一个 n 以内的随机前缀(打散)</p>
+<p>2、对另外一个 RDD 进行扩容，将每条数据都扩容成 n 条数据，扩容出来的每条数据都依次打上一个 0~n 的前缀</p>
+<p>3、将两个处理后的 RDD 进行 join 即可</p>
+<p>扩容保证能正常 join 的执行</p>
+<p>使用注意事项：</p>
+<ul>
+<li>如果两个 RDD 都很大，那么将 RDD 进行 N 倍的扩容显然行不通</li>
+<li>使用扩容的方式通常能缓解数据倾斜，不能彻底解决数据倾斜问题</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Janhen</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="http://example.com/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/">http://example.com/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/spark/">spark</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2021/05/05/Spark-Shuffle%E8%BF%87%E7%A8%8B/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Spark-Shuffle 过程和原理</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="http://img.janhen.com/20210331220602f7HmbN.pnghttp://img.janhen.com/20210331220602f7HmbN.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Janhen</div><div class="author-info__description">大数据、后端、运维分享</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">47</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">22</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Janhen"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C"><span class="toc-text">数据倾斜</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C%E5%A4%84%E7%90%86"><span class="toc-text">数据倾斜处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E7%9B%90%E6%89%93%E6%95%A3-Key"><span class="toc-text">加盐打散 Key</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/" title="Spark-数据倾斜"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-数据倾斜"/></a><div class="content"><a class="title" href="/2021/05/07/Spark-%E6%95%B0%E6%8D%AE%E5%80%BE%E6%96%9C/" title="Spark-数据倾斜">Spark-数据倾斜</a><time datetime="2021-05-07T07:45:41.000Z" title="Created 2021-05-07 15:45:41">2021-05-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/05/05/Spark-Shuffle%E8%BF%87%E7%A8%8B/" title="Spark-Shuffle 过程和原理"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-Shuffle 过程和原理"/></a><div class="content"><a class="title" href="/2021/05/05/Spark-Shuffle%E8%BF%87%E7%A8%8B/" title="Spark-Shuffle 过程和原理">Spark-Shuffle 过程和原理</a><time datetime="2021-05-05T08:55:56.000Z" title="Created 2021-05-05 16:55:56">2021-05-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/05/05/Spark-SQL%E4%B8%ADJoin%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Spark-Join的原理"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spark-Join的原理"/></a><div class="content"><a class="title" href="/2021/05/05/Spark-SQL%E4%B8%ADJoin%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Spark-Join的原理">Spark-Join的原理</a><time datetime="2021-05-05T08:29:59.000Z" title="Created 2021-05-05 16:29:59">2021-05-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/22/Hadoop-MapReduce-%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E/" title="Hadoop-MapReduce-计算引擎"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hadoop-MapReduce-计算引擎"/></a><div class="content"><a class="title" href="/2021/04/22/Hadoop-MapReduce-%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E/" title="Hadoop-MapReduce-计算引擎">Hadoop-MapReduce-计算引擎</a><time datetime="2021-04-22T05:22:45.000Z" title="Created 2021-04-22 13:22:45">2021-04-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/04/22/Hadoop-HDFS-%E5%AD%98%E5%82%A8/" title="Hadoop-HDFS-存储"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hadoop-HDFS-存储"/></a><div class="content"><a class="title" href="/2021/04/22/Hadoop-HDFS-%E5%AD%98%E5%82%A8/" title="Hadoop-HDFS-存储">Hadoop-HDFS-存储</a><time datetime="2021-04-22T05:22:29.000Z" title="Created 2021-04-22 13:22:29">2021-04-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Janhen</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
